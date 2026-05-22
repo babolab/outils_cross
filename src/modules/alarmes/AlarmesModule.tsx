@@ -25,20 +25,25 @@ export default function AlarmesModule() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [pdfLoading, setPdfLoading] = useState(false)
+  const [fileCount, setFileCount] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const handleFile = async (file: File) => {
+  const handleFiles = async (files: FileList | File[]) => {
+    const list = Array.from(files)
+    if (list.length === 0) return
     setError('')
     setLoading(true)
     try {
-      const text = await file.text()
-      const rows = parseCsv(text)
-      if (rows.length === 0) {
-        setError('Aucune alarme COLLISION valide trouvée dans ce fichier.')
+      const allRows = (
+        await Promise.all(list.map((f) => f.text().then((t) => parseCsv(t))))
+      ).flat()
+      if (allRows.length === 0) {
+        setError('Aucune alarme COLLISION valide trouvée dans les fichiers sélectionnés.')
         return
       }
-      const grp = groupAlarms(rows)
+      const grp = groupAlarms(allRows)
       setGrouped(grp)
+      setFileCount(list.length)
       const s = allShips(grp)
       setShips(s)
       setSelectedShips([])
@@ -98,19 +103,19 @@ export default function AlarmesModule() {
         onDragOver={(e) => e.preventDefault()}
         onDrop={(e) => {
           e.preventDefault()
-          const file = e.dataTransfer.files[0]
-          if (file) handleFile(file)
+          if (e.dataTransfer.files.length > 0) handleFiles(e.dataTransfer.files)
         }}
       >
         <Upload size={28} className="mx-auto text-slate-500 mb-2" />
-        <p className="text-sm text-slate-300">Glisser-déposer le CSV d'alarmes SIG VTS</p>
+        <p className="text-sm text-slate-300">Glisser-déposer un ou plusieurs CSV d'alarmes SIG VTS</p>
         <p className="text-xs text-slate-500 mt-0.5">Service NAVIGATION → Statistiques → Acquittement des alarmes</p>
         <input
           ref={inputRef}
           type="file"
           accept=".csv"
+          multiple
           className="hidden"
-          onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
+          onChange={(e) => e.target.files && e.target.files.length > 0 && handleFiles(e.target.files)}
         />
       </div>
 
@@ -120,7 +125,7 @@ export default function AlarmesModule() {
       {grouped.length > 0 && (
         <>
           <div className="bg-slate-800 rounded-xl p-4 space-y-4">
-            <p className="text-xs text-slate-400">{grouped.length} alarme(s) regroupée(s) chargées</p>
+            <p className="text-xs text-slate-400">{grouped.length} alarme(s) regroupée(s) — {fileCount} fichier(s) chargé(s)</p>
 
             <div>
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">
