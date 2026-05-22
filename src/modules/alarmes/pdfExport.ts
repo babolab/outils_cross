@@ -35,7 +35,7 @@ export function exportPdf(
 
   doc.setFontSize(9)
   doc.setFont('helvetica', 'normal')
-  doc.text(`Période : ${dateStart} → ${dateEnd}`, 14, 23)
+  doc.text(`Periode : ${dateStart} -> ${dateEnd}`, 14, 23)
   doc.setFontSize(8)
   doc.setTextColor(100)
   doc.text('Alarmes groupées par couple de navires et par intervalle de 15 minutes.', 14, 29)

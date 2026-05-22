@@ -67,7 +67,7 @@ export default function AlarmesModule() {
       // Load logo as base64 data URL
       let logoDataUrl: string | undefined
       try {
-        const resp = await fetch('/logo-cross.jpg')
+        const resp = await fetch(import.meta.env.BASE_URL + 'logo-cross.jpg')
         const blob = await resp.blob()
         logoDataUrl = await new Promise<string>((resolve) => {
           const reader = new FileReader()
