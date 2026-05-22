@@ -23,7 +23,7 @@ function Sidebar() {
         <img src={logoUrl} alt="CROSS Jobourg" className="w-16 h-auto rounded" />
         <div className="text-center">
           <p className="text-xs font-bold text-blue-400 uppercase tracking-widest">CROSS Jobourg</p>
-          <p className="text-xs text-slate-500 mt-0.5">Outils maritimes</p>
+          <p className="text-xs text-slate-500 mt-0.5">Outils opérationnels</p>
         </div>
       </div>
       <nav className="flex-1 p-2 space-y-1">
