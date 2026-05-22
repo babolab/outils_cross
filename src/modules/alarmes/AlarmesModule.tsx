@@ -93,7 +93,7 @@ export default function AlarmesModule() {
       <div>
         <h1 className="text-xl font-bold text-blue-300">Alarmes de collision VTS</h1>
         <p className="text-sm text-slate-400 mt-1">
-          Importez un CSV d'alarmes SIG VTS pour générer un rapport filtré par navire.
+          Importez un ou plusieurs CSV d'alarmes SIG VTS pour générer un rapport filtré par navire.
         </p>
       </div>
 
@@ -108,7 +108,7 @@ export default function AlarmesModule() {
       >
         <Upload size={28} className="mx-auto text-slate-500 mb-2" />
         <p className="text-sm text-slate-300">Glisser-déposer un ou plusieurs CSV d'alarmes SIG VTS</p>
-        <p className="text-xs text-slate-500 mt-0.5">Service NAVIGATION → Statistiques → Acquittement des alarmes</p>
+        <p className="text-xs text-slate-500 mt-0.5">Service NAVIGATION → Statistiques → Année → Acquittement des alarmes</p>
         <input
           ref={inputRef}
           type="file"
