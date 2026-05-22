@@ -23,7 +23,7 @@ export function exportPdf(
   // Logo in top-right corner
   if (logoDataUrl) {
     try {
-      doc.addImage(logoDataUrl, 'JPEG', pageW - 36, 6, 22, 22)
+      doc.addImage(logoDataUrl, 'PNG', pageW - 36, 6, 22, 22)
     } catch {
       // ignore if image fails
     }

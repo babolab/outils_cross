@@ -5,7 +5,7 @@ import { cn } from './lib/utils'
 import CarteModule from './modules/carte/CarteModule'
 import ExtractionModule from './modules/extraction/ExtractionModule'
 import AlarmesModule from './modules/alarmes/AlarmesModule'
-import logoUrl from '/logo-cross.jpg'
+import logoUrl from '/logo-cross.png'
 
 const navItems = [
   { path: '/', label: 'Rejeu pollution', icon: Map },
