@@ -5,6 +5,7 @@ import { cn } from './lib/utils'
 import CarteModule from './modules/carte/CarteModule'
 import ExtractionModule from './modules/extraction/ExtractionModule'
 import AlarmesModule from './modules/alarmes/AlarmesModule'
+import logoUrl from '/logo-cross.jpg'
 
 const navItems = [
   { path: '/', label: 'Rejeu pollution', icon: Map },
@@ -17,7 +18,7 @@ function Sidebar() {
   return (
     <aside className="w-56 shrink-0 bg-slate-900 border-r border-slate-700 flex flex-col">
       <div className="p-4 border-b border-slate-700 flex flex-col items-center gap-2">
-        <img src="/logo-cross.jpg" alt="CROSS Jobourg" className="w-16 h-auto rounded" />
+        <img src={logoUrl} alt="CROSS Jobourg" className="w-16 h-auto rounded" />
         <div className="text-center">
           <p className="text-xs font-bold text-blue-400 uppercase tracking-widest">CROSS Jobourg</p>
           <p className="text-xs text-slate-500 mt-0.5">Outils maritimes</p>
