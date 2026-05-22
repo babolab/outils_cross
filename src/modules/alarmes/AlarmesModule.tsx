@@ -6,6 +6,7 @@ import { filterForShip, allShips } from './filters'
 import { exportCsv } from './csvExport'
 import { exportPdf } from './pdfExport'
 import type { AlarmRow } from './types'
+import MultiSelect from '../../components/MultiSelect'
 
 function fmtDate(d: Date): string {
   return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
@@ -51,12 +52,6 @@ export default function AlarmesModule() {
     }
   }
 
-  const toggleShip = (ship: string) => {
-    setSelectedShips((prev) =>
-      prev.includes(ship) ? prev.filter((s) => s !== ship) : [...prev, ship],
-    )
-  }
-
   const shipsData = new Map<string, AlarmRow[]>()
   if (selectedShips.length > 0 && dateStart && dateEnd) {
     for (const ship of selectedShips) {
@@ -66,10 +61,23 @@ export default function AlarmesModule() {
 
   const totalAlarms = Array.from(shipsData.values()).reduce((s, a) => s + a.length, 0)
 
-  const handlePdf = () => {
+  const handlePdf = async () => {
     setPdfLoading(true)
     try {
-      exportPdf(shipsData, dateStart, dateEnd, `rapport_collision_${dateStart}_${dateEnd}.pdf`)
+      // Load logo as base64 data URL
+      let logoDataUrl: string | undefined
+      try {
+        const resp = await fetch('/logo-cross.jpg')
+        const blob = await resp.blob()
+        logoDataUrl = await new Promise<string>((resolve) => {
+          const reader = new FileReader()
+          reader.onload = () => resolve(reader.result as string)
+          reader.readAsDataURL(blob)
+        })
+      } catch {
+        // logo unavailable, continue without it
+      }
+      exportPdf(shipsData, dateStart, dateEnd, `rapport_collision_${dateStart}_${dateEnd}.pdf`, logoDataUrl)
     } finally {
       setPdfLoading(false)
     }
@@ -115,22 +123,15 @@ export default function AlarmesModule() {
             <p className="text-xs text-slate-400">{grouped.length} alarme(s) regroupée(s) chargées</p>
 
             <div>
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Navires</p>
-              <div className="flex flex-wrap gap-2">
-                {ships.map((ship) => (
-                  <button
-                    key={ship}
-                    onClick={() => toggleShip(ship)}
-                    className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                      selectedShips.includes(ship)
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-                    }`}
-                  >
-                    {ship}
-                  </button>
-                ))}
-              </div>
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">
+                Navires ({ships.length})
+              </p>
+              <MultiSelect
+                options={ships}
+                selected={selectedShips}
+                onChange={setSelectedShips}
+                placeholder="Rechercher un navire…"
+              />
             </div>
 
             <div className="flex gap-4">

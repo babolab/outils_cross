@@ -15,8 +15,19 @@ export function exportPdf(
   dateStart: string,
   dateEnd: string,
   filename: string,
+  logoDataUrl?: string,
 ): void {
   const doc = new jsPDF({ orientation: 'landscape' })
+  const pageW = doc.internal.pageSize.getWidth()
+
+  // Logo in top-right corner
+  if (logoDataUrl) {
+    try {
+      doc.addImage(logoDataUrl, 'JPEG', pageW - 36, 6, 22, 22)
+    } catch {
+      // ignore if image fails
+    }
+  }
 
   doc.setFontSize(14)
   doc.setFont('helvetica', 'bold')
