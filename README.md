@@ -33,6 +33,17 @@ Génération d'un rapport à partir du fichier CSV d'alarmes d'acquittement expo
 - Filtrage par navire et par période
 - Export CSV et PDF avec logo CROSS (le rapport PDF colore en rouge les situations CPA < 150 m)
 
+### EGC — Adressage
+
+Aide à la rédaction de la ligne d'adressage des messages **EGC (Enhanced Group Call)** de détresse envoyés par les CROSS via Inmarsat.
+
+- Formulaire guidé pour les 7 champs du code EGC (SAT, C1 priorité, C2 code de service, C3 zone, C4 cadence, C5 fixe)
+- Saisie C3 dynamique selon le type de zone : circulaire (C2 = 14 ou 44), rectangulaire (C2 = 34), NAVAREA (C2 = 31) ou globale (C2 = 00)
+- Visualisation cartographique en temps réel de la zone d'adressage sur fond Leaflet
+- Génération et copie de la ligne d'adressage prête à coller dans l'interface d'envoi
+
+> **Responsabilité opérateur :** l'opérateur est seul responsable de vérifier la cohérence et l'exactitude de l'adressage EGC avant tout envoi. Cet outil est une aide à la rédaction et ne se substitue pas au jugement opérationnel.
+
 ---
 
 ## Utilisation
@@ -59,6 +70,7 @@ src/
     carte/        # Rejeu pollution
     extraction/   # Découpe horaire Mothy
     alarmes/      # Alarmes de collision VTS
+    egc/          # EGC — Adressage
 ```
 
 ---
