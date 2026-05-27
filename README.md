@@ -77,4 +77,14 @@ src/
 
 ## Licence
 
-Code source ouvert, libre de réutilisation. Aucune garantie sur l'exactitude des données traitées — les outils ne se substituent pas aux procédures opérationnelles en vigueur.
+[![Licence: CC BY-NC-ND 4.0](https://licensebuttons.net/l/by-nc-nd/4.0/88x31.png)](https://creativecommons.org/licenses/by-nc-nd/4.0/deed.fr)
+
+Ce projet est publié sous licence **Creative Commons Attribution — Pas d'Utilisation Commerciale — Pas de Modification 4.0 International (CC BY-NC-ND 4.0)**.
+
+Copyright (c) 2026 Geoffrey Babault
+
+- Le partage à l'identique est autorisé avec attribution de la paternité.
+- Toute utilisation commerciale est **interdite**.
+- Toute modification ou œuvre dérivée est **interdite** sans accord écrit préalable de l'auteur.
+
+Aucune garantie sur l'exactitude des données traitées — les outils ne se substituent pas aux procédures opérationnelles en vigueur.
