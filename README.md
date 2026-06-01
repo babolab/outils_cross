@@ -1,10 +1,24 @@
 # Outils CROSS Jobourg
 
-Boîte à outils web destinée en premier lieu au quart de surveillance de la navigation et au quart de surveillance de la pollution du **CROSS Jobourg**. Ces outils fonctionnent entièrement dans le navigateur, sans serveur ni installation : aucune donnée n'est transmise à l'extérieur.
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-blue?style=for-the-badge&logo=github)](https://babolab.github.io/outils_cross/)
+[![Stack](https://img.shields.io/badge/Stack-React%20%2B%20TypeScript%20%2B%20Vite-61DAFB?style=for-the-badge&logo=react)](https://vitejs.dev/)
+[![Licence](https://img.shields.io/badge/Licence-CC%20BY--NC--ND%204.0-lightgrey?style=for-the-badge)](LICENSE)
+
+> **Web toolbox for Maritime Rescue Coordination Centre (MRCC) operators** — built for real-time pollution surveillance, vessel tracking and SAR coordination. Designed for CROSS Jobourg, adaptable to any MRCC/VTS environment.
+
+Boîte à outils web destinée au quart de surveillance de la navigation et au quart de surveillance de la pollution du **CROSS Jobourg**. Ces outils fonctionnent entièrement dans le navigateur, sans serveur ni installation : aucune donnée n'est transmise à l'extérieur.
 
 D'autres CROSS ou toute personne dont le travail s'y prête sont libres de les utiliser.
 
-**Accès en ligne :** https://babolab.github.io/outils_cross/
+**→ Accès en ligne :** https://babolab.github.io/outils_cross/
+
+---
+
+## Operational context
+
+Ces outils ont été conçus et déployés dans un cadre opérationnel réel : la **Manche**, l'une des voies maritimes les plus denses au monde (~500 navires/jour dans le DST du Pas-de-Calais), sous responsabilité du CROSS Jobourg — MRCC compétent sur ~300 000 km² de zone SAR. Les données traitées sont des données opérationnelles réelles : traces AIS issues des systèmes VTS, prévisions de dérive Mothy (SHOM), images satellitaires de surveillance des pollutions.
+
+The English Channel maritime traffic includes a significant proportion of vessels operating with degraded or absent AIS transmissions ("dark vessels"), requiring cross-referencing of drift modelling, satellite imagery and VTS radar tracks — which these tools are designed to support.
 
 ---
 
@@ -12,7 +26,7 @@ D'autres CROSS ou toute personne dont le travail s'y prête sont libres de les u
 
 ### Rejeu pollution
 
-Visualisation cartographique animée d'une dérive de polluant issue de **Mothy** (logiciel de prévision de dérive du Shom), superposée aux trajectoires des navires présents (issues du SIG VTS ou d'ANAIS).
+Visualisation cartographique animée d'une dérive de polluant issue de **Mothy** (logiciel de prévision de dérive du SHOM), superposée aux trajectoires des navires présents (issues du SIG VTS ou d'ANAIS).
 
 - Importer le fichier de prévision Mothy (KMZ ou GPX) et autant de traces navires que souhaité (GPX)
 - Rejouer la dérive pas à pas dans le temps
@@ -53,7 +67,7 @@ Aucune installation requise. Ouvrir l'URL ci-dessus dans un navigateur moderne (
 Pour une utilisation hors ligne ou sur un réseau isolé, cloner le dépôt et lancer localement :
 
 ```bash
-cd outils-cross-pages
+cd outils_cross
 npm install
 npm run dev
 ```
@@ -83,8 +97,8 @@ Ce projet est publié sous licence **Creative Commons Attribution — Pas d'Util
 
 Copyright (c) 2026 Geoffrey Babault
 
-- Le partage à l'identique est autorisé avec attribution de la paternité.
+- Le partage à l'identique est autorisé avec attribution.
 - Toute utilisation commerciale est **interdite**.
-- Toute modification ou œuvre dérivée est **interdite** sans accord écrit préalable de l'auteur.
+- Toute modification ou œuvre dérivée est **interdite** sans accord de l'auteur.
 
-Aucune garantie sur l'exactitude des données traitées — les outils ne se substituent pas aux procédures opérationnelles en vigueur.
+Voir le fichier [LICENSE](LICENSE) pour le texte complet.
