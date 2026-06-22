@@ -78,7 +78,8 @@ export default function SitproxModule() {
     const deduped   = deduplicate(prepared)
     const generated = deduped.map(buildRow)
 
-    const nRapp = generated.filter(r => r.type === 'SITUATION RAPPROCHÉE').length
+    const nRapp   = generated.filter(r => r.type === 'SITUATION RAPPROCHÉE').length
+    const nNonAck = generated.filter(r => r.oper === 'non acquitté').length
     setRows(generated)
     setStats({
       files:      files.length,
@@ -86,6 +87,7 @@ export default function SitproxModule() {
       dedup:      deduped.length,
       rapprochee: nRapp,
       anticipee:  deduped.length - nRapp,
+      nonAck:     nNonAck,
     })
 
     if (!generated.length) setError('Aucune alarme COLLISION_CONTROL dans la période sélectionnée.')
@@ -185,19 +187,21 @@ export default function SitproxModule() {
 
       {/* Stats */}
       {stats && (
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           {[
-            { label: 'Fichier(s)',         value: stats.files },
-            { label: 'Alarmes brutes',     value: stats.brut },
-            { label: 'Après dédup 30 min', value: stats.dedup },
-            { label: 'Rapprochées',        value: stats.rapprochee, red: true },
-            { label: 'Anticipées',         value: stats.anticipee,  green: true },
+            { label: 'Fichier(s)',         value: stats.files,      tip: 'CSV chargés' },
+            { label: 'Alarmes brutes',     value: stats.brut,       tip: 'COLLISION_CONTROL dans la période' },
+            { label: 'Après dédup 45 min', value: stats.dedup,      tip: 'Meilleur CPA par paire · fenêtre 45 min' },
+            { label: 'Rapprochées',        value: stats.rapprochee, tip: 'CPA < 0,7 Nq', red: true },
+            { label: 'Anticipées',         value: stats.anticipee,  tip: 'CPA ≥ 0,7 Nq', green: true },
+            { label: 'Non acquittées',     value: stats.nonAck,     tip: 'Aucun opérateur enregistré', orange: true },
           ].map(s => (
             <div key={s.label} className="bg-slate-800 rounded-xl p-3 text-center">
-              <div className={`text-2xl font-bold ${s.red ? 'text-red-400' : s.green ? 'text-green-400' : 'text-blue-300'}`}>
+              <div className={`text-2xl font-bold ${s.red ? 'text-red-400' : s.green ? 'text-green-400' : s.orange ? 'text-orange-400' : 'text-blue-300'}`}>
                 {s.value}
               </div>
-              <div className="text-xs text-slate-400 mt-1">{s.label}</div>
+              <div className="text-xs text-slate-300 mt-1 font-medium">{s.label}</div>
+              <div className="text-xs text-slate-500 mt-0.5">{s.tip}</div>
             </div>
           ))}
         </div>

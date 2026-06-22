@@ -53,4 +53,5 @@ export interface SitproxStats {
   dedup: number
   rapprochee: number
   anticipee: number
+  nonAck: number
 }

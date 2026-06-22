@@ -1,6 +1,6 @@
 import { useHashLocation } from 'wouter/use-hash-location'
 import { Router, Route, Link } from 'wouter'
-import { Map, FileArchive, Bell, Radio, Anchor } from 'lucide-react'
+import { Map, FileArchive, Bell, Radio } from 'lucide-react'
 import { cn } from './lib/utils'
 import CarteModule from './modules/carte/CarteModule'
 import ExtractionModule from './modules/extraction/ExtractionModule'
@@ -13,8 +13,8 @@ const navItems = [
   { path: '/', label: 'Rejeu pollution', icon: Map },
   { path: '/extraction', label: 'Extraction dérive', icon: FileArchive },
   { path: '/alarmes', label: 'Alarmes collision', icon: Bell },
+  { path: '/sitprox', label: 'Suivi sitprox', icon: Bell },
   { path: '/egc', label: 'EGC — Adressage', icon: Radio },
-  { path: '/sitprox', label: 'Suivi sitprox', icon: Anchor },
 ]
 
 function Sidebar() {

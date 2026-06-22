@@ -1,7 +1,7 @@
 import type { VtsAlarm, Pnav4Row, B64Data } from './types'
 import { parseWktCoords, ddToDdm } from '../../lib/geo'
 
-const WINDOW_MS = 30 * 60 * 1000
+const WINDOW_MS = 45 * 60 * 1000
 
 // ─── b64 ────────────────────────────────────────────────────────────────────
 

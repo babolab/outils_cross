@@ -47,6 +47,17 @@ Génération d'un rapport à partir du fichier CSV d'alarmes d'acquittement expo
 - Filtrage par navire et par période
 - Export CSV et PDF avec logo CROSS (le rapport PDF colore en rouge les situations CPA < 150 m)
 
+### Suivi des situations de rapprochement (pnav4)
+
+Génération des lignes pnav4 à partir des exports CSV d'événements SIG VTS (`CROSS_JB_VTS_EVENTS_YYYY-MM_*.csv`), destinées à être collées dans le tableau de suivi Google Sheets pnav4.
+
+- Chargement multi-fichiers (glisser-déposer ou sélection), avec filtre de période
+- Déduplication automatique : pour une même paire de navires, les alarmes distantes de moins de 45 minutes sont fusionnées en conservant le meilleur CPA
+- Détection du type de navire (FV / SV / MV) à partir du nom AIS et des données de navigation encodées dans le champ b64
+- Conversion de la position WKT → degrés minutes décimales (format pnav4)
+- Statistiques : alarmes brutes, après déduplication, rapprochées (CPA < 0,7 Nq), anticipées, non acquittées
+- Export TSV (collage depuis la colonne C dans Sheets) et CSV téléchargeable
+
 ### EGC — Adressage
 
 Aide à la rédaction de la ligne d'adressage des messages **EGC (Enhanced Group Call)** de détresse envoyés par les CROSS via Inmarsat.
@@ -84,6 +95,7 @@ src/
     carte/        # Rejeu pollution
     extraction/   # Découpe horaire Mothy
     alarmes/      # Alarmes de collision VTS
+    sitprox/      # Suivi situations de rapprochement (pnav4)
     egc/          # EGC — Adressage
 ```
 
