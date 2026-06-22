@@ -1,3 +1,6 @@
+# Données opérationnelles locales (non versionnées)
+data/
+
 # Logs
 logs
 *.log

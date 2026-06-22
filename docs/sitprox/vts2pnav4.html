@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VTS → pnav4 | CROSS Jobourg</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: #eef2f7; color: #1a2332; min-height: 100vh; }
+
+header { background: #1a3a5c; color: #fff; padding: 16px 24px; display: flex; align-items: baseline; gap: 16px; }
+header h1 { font-size: 1.35rem; font-weight: 600; }
+header span { font-size: 0.82rem; opacity: 0.65; }
+
+main { max-width: 1440px; margin: 0 auto; padding: 20px 24px; display: flex; flex-direction: column; gap: 14px; }
+
+.card { background: #fff; border-radius: 8px; padding: 18px 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
+.card-title { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #7090b0; margin-bottom: 12px; }
+
+/* Drop zone */
+#drop-zone {
+  border: 2px dashed #4a80b8;
+  border-radius: 8px;
+  padding: 28px 20px;
+  text-align: center;
+  background: #f5f9ff;
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+  user-select: none;
+}
+#drop-zone.drag-over { background: #dce8f8; border-color: #2a5a9a; }
+#drop-zone p { color: #6a90b8; font-size: 0.9rem; margin-bottom: 12px; }
+
+/* Buttons */
+.btn { display: inline-flex; align-items: center; gap: 6px; border: none; border-radius: 6px; padding: 8px 16px; font-size: 0.88rem; cursor: pointer; font-family: inherit; font-weight: 500; transition: background .12s, opacity .12s; }
+.btn:disabled { opacity: 0.38; cursor: not-allowed; }
+.btn-primary   { background: #3a6ea5; color: #fff; }
+.btn-primary:not(:disabled):hover { background: #2a5a8a; }
+.btn-success   { background: #2e7d52; color: #fff; }
+.btn-success:not(:disabled):hover { background: #236040; }
+.btn-outline   { background: #fff; color: #1a3a5c; border: 1px solid #c8d8e8; }
+.btn-outline:not(:disabled):hover { background: #f0f6ff; }
+.btn-sm        { padding: 5px 11px; font-size: 0.8rem; }
+
+/* File chips */
+#file-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; min-height: 0; }
+.chip { display: inline-flex; align-items: center; gap: 6px; background: #e4eff9; border-radius: 20px; padding: 4px 10px 4px 12px; font-size: 0.82rem; color: #1a3a5c; }
+.chip-remove { cursor: pointer; color: #7090b0; font-size: 1.1rem; line-height: 1; margin-top: -1px; }
+.chip-remove:hover { color: #c0392b; }
+
+/* Filter row */
+.filter-row { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.filter-row label { font-size: 0.88rem; display: flex; align-items: center; gap: 8px; color: #3a5a7a; }
+input[type=date] { border: 1px solid #c8d8e8; border-radius: 6px; padding: 6px 10px; font-size: 0.88rem; color: #1a2332; font-family: inherit; background: #f8fbff; }
+
+/* Action bar */
+.action-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+/* Stats */
+.stats-grid { display: flex; gap: 28px; flex-wrap: wrap; }
+.stat { text-align: center; min-width: 80px; }
+.stat-value { font-size: 2rem; font-weight: 700; color: #1a3a5c; line-height: 1; }
+.stat-label { font-size: 0.75rem; color: #7090b0; margin-top: 4px; }
+.stat-value.warn { color: #c0392b; }
+
+/* Badge */
+.badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: 700; white-space: nowrap; }
+.badge-r { background: #fde8e8; color: #b03020; }
+.badge-a { background: #e3f5ea; color: #1e6038; }
+
+/* Table */
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; font-size: 0.8rem; min-width: 100%; }
+th { background: #1a3a5c; color: #fff; padding: 7px 10px; text-align: left; white-space: nowrap; font-weight: 500; font-size: 0.76rem; letter-spacing: 0.02em; }
+td { padding: 5px 10px; border-bottom: 1px solid #e8f0f8; white-space: nowrap; max-width: 200px; overflow: hidden; text-overflow: ellipsis; }
+tr:nth-child(even) td { background: #fafcff; }
+tr:hover td { background: #eef5ff; }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 22px; right: 22px;
+  background: #1e6038; color: #fff;
+  padding: 11px 18px; border-radius: 8px;
+  font-size: 0.87rem; box-shadow: 0 4px 14px rgba(0,0,0,0.22);
+  transform: translateY(60px); opacity: 0; transition: all .25s;
+  pointer-events: none; max-width: 360px;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.err  { background: #b03020; }
+
+/* Note */
+.note { font-size: 0.78rem; color: #7090b0; margin-top: 10px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>VTS → pnav4</h1>
+  <span>CROSS Jobourg — exports SIG VTS vers tableau de suivi</span>
+</header>
+
+<main>
+
+  <!-- Upload -->
+  <div class="card">
+    <div class="card-title">Fichiers CSV VTS</div>
+    <div id="drop-zone" onclick="document.getElementById('file-input').click()">
+      <p>Glissez-déposez vos exports CSV SIG VTS ici</p>
+      <button class="btn btn-primary" onclick="event.stopPropagation(); document.getElementById('file-input').click()">Parcourir…</button>
+      <input type="file" id="file-input" multiple accept=".csv" hidden>
+    </div>
+    <div id="file-list"></div>
+  </div>
+
+  <!-- Filtre période -->
+  <div class="card">
+    <div class="card-title">Filtre de période (UTC)</div>
+    <div class="filter-row">
+      <label>Du <input type="date" id="date-from"></label>
+      <label>Au <input type="date" id="date-to"></label>
+      <button class="btn btn-outline btn-sm" onclick="clearDates()">Effacer</button>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="card">
+    <div class="action-row">
+      <button class="btn btn-success" id="btn-generate" onclick="generate()">&#9654; Générer</button>
+      <button class="btn btn-outline" id="btn-copy" onclick="copyTSV()" disabled>⎘ Copier TSV (Sheets)</button>
+      <button class="btn btn-outline" id="btn-export" onclick="exportCSV()" disabled>&#8595; Télécharger CSV</button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="card" id="stats-card" style="display:none">
+    <div class="card-title">Résultats</div>
+    <div class="stats-grid">
+      <div class="stat"><div class="stat-value" id="s-files">0</div><div class="stat-label">Fichier(s)</div></div>
+      <div class="stat"><div class="stat-value" id="s-brut">0</div><div class="stat-label">Alarmes brutes</div></div>
+      <div class="stat"><div class="stat-value" id="s-dedup">0</div><div class="stat-label">Après dédup 30 min</div></div>
+      <div class="stat"><div class="stat-value" id="s-rapp">0</div><div class="stat-label">Rapprochées (&lt;0,7 Nq)</div></div>
+      <div class="stat"><div class="stat-value" id="s-anti">0</div><div class="stat-label">Anticipées (≥0,7 Nq)</div></div>
+    </div>
+  </div>
+
+  <!-- Aperçu -->
+  <div class="card" id="preview-card" style="display:none">
+    <div class="card-title">Aperçu</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>DATE</th><th>HEURE z</th><th>TYPE</th>
+            <th>NAVIRE 1</th><th>IMO 1</th><th>T1</th>
+            <th>NAVIRE 2</th><th>IMO 2</th><th>T2</th>
+            <th>CPA (Nq)</th><th>TCPA (min)</th>
+            <th>LATITUDE</th><th>LONGITUDE</th>
+            <th>DESCRIPTION (comment. op.)</th><th>OPÉRATEUR ACQ.</th>
+          </tr>
+        </thead>
+        <tbody id="preview-body"></tbody>
+      </table>
+    </div>
+    <p class="note">⚠️ Le TSV copié couvre les colonnes <strong>C à AG</strong> — collez à partir de la cellule <strong>C</strong> dans Sheets (laissez les colonnes A et B pour les numéros de ligne).</p>
+  </div>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  État global
+// ═══════════════════════════════════════════════════════════
+const loadedFiles = new Map(); // name → {name, objects[]}
+let generatedRows = [];
+let currentTSV = '';
+
+// ═══════════════════════════════════════════════════════════
+//  Parser CSV RFC 4180
+// ═══════════════════════════════════════════════════════════
+function parseCSV(text) {
+  const rows = [];
+  let i = 0;
+  const n = text.length;
+  while (i < n) {
+    const row = [];
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      let field = '';
+      if (i < n && text[i] === '"') {
+        i++;
+        while (i < n) {
+          if (text[i] === '"') {
+            i++;
+            if (i < n && text[i] === '"') { field += '"'; i++; }
+            else break;
+          } else {
+            field += text[i++];
+          }
+        }
+      } else {
+        while (i < n && text[i] !== ',' && text[i] !== '\r' && text[i] !== '\n') {
+          field += text[i++];
+        }
+      }
+      row.push(field);
+      if (i < n && text[i] === ',') { i++; continue; }
+      break;
+    }
+    if (i < n && text[i] === '\r') i++;
+    if (i < n && text[i] === '\n') i++;
+    if (row.length > 1 || (row.length === 1 && row[0] !== '')) rows.push(row);
+  }
+  return rows;
+}
+
+function csvToObjects(rows) {
+  if (rows.length < 2) return [];
+  const headers = rows[0].map(h => h.trim());
+  return rows.slice(1).map(row => {
+    const obj = {};
+    headers.forEach((h, i) => { obj[h] = row[i] !== undefined ? row[i].trim() : ''; });
+    return obj;
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Helpers position
+// ═══════════════════════════════════════════════════════════
+function parseWKT(wkt) {
+  if (!wkt) return null;
+  // "POINT (lon lat)" — longitude en premier en WKT
+  const m = (wkt + '').match(/POINT\s*\(\s*([-\d.]+)\s+([-\d.]+)\s*\)/i);
+  if (!m) return null;
+  return { lon: parseFloat(m[1]), lat: parseFloat(m[2]) };
+}
+
+function ddToDDM(dd, isLat) {
+  const neg = dd < 0;
+  const abs = Math.abs(dd);
+  const deg = Math.floor(abs);
+  const minRaw = (abs - deg) * 60;
+  const minStr = minRaw.toFixed(2).replace('.', ',');
+  if (isLat) {
+    return `${deg}°${minStr}${neg ? 'S' : 'N'}`;
+  } else {
+    return `${String(deg).padStart(3, '0')}°${minStr}${neg ? 'W' : 'E'}`;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Décodage base64 / accès sécurisé
+// ═══════════════════════════════════════════════════════════
+function decodeB64(str) {
+  if (!str) return null;
+  try { return JSON.parse(atob(str)); } catch { return null; }
+}
+
+function get(obj, path) {
+  return path.split('.').reduce((acc, k) => (acc != null ? acc[k] : undefined), obj);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Type navire : FV ou MV
+// ═══════════════════════════════════════════════════════════
+function shipType(name, targetData) {
+  const n = (name || '').toUpperCase();
+  // Heuristique préfixe nom
+  if (/\bF\/V\b|\bF\.V\.|^FV\s|\bFISH\b/.test(n)) return 'FV';
+  if (/\bS\/V\b|\bS\.V\.|^SV\s|SOLO SAILOR/.test(n)) return 'SV';
+  if (targetData) {
+    const bu = (targetData.BU || '').toUpperCase();
+    if (/FISH|PECH|TRAWL|CHALUT/.test(bu))             return 'FV';
+    if (/SAIL|VOILE|PLAISANCE|YACHT|PLEASURE/.test(bu)) return 'SV';
+    // Code AIS numérique (si disponible dans TARGET_DATA)
+    const code = parseInt(targetData.BV || 0, 10);
+    if (code >= 30 && code <= 35) return 'FV';
+    if (code === 36 || code === 37) return 'SV';
+  }
+  return 'MV';
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Formatage dates
+// ═══════════════════════════════════════════════════════════
+function parseUTC(s) {
+  if (!s) return null;
+  const d = new Date(s.replace(' ', 'T') + 'Z');
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function fmtDate(d) {
+  return `${pad2(d.getUTCDate())}/${pad2(d.getUTCMonth()+1)}/${d.getUTCFullYear()}`;
+}
+
+function fmtTime(d) {
+  return `${pad2(d.getUTCHours())}:${pad2(d.getUTCMinutes())}`;
+}
+
+function pad2(n) { return String(n).padStart(2, '0'); }
+
+// ═══════════════════════════════════════════════════════════
+//  Déduplication — fenêtre glissante 30 min par paire MMSI
+// ═══════════════════════════════════════════════════════════
+const WINDOW_MS = 30 * 60 * 1000;
+
+function deduplicate(alarms) {
+  const byPair = new Map();
+  const isolated = [];   // MMSI inconnus → pas de dédup
+
+  for (const a of alarms) {
+    const m1 = parseInt(a.ship_mmsi, 10) || 0;
+    const m2 = parseInt(a.ship2_mmsi, 10) || 0;
+    if (!m1 && !m2) { isolated.push(a); continue; }
+    const key = `${Math.min(m1, m2)}_${Math.max(m1, m2)}`;
+    if (!byPair.has(key)) byPair.set(key, []);
+    byPair.get(key).push(a);
+  }
+
+  const result = [...isolated];
+
+  for (const pairAlarms of byPair.values()) {
+    pairAlarms.sort((a, b) => a._dt - b._dt);
+
+    // Composantes connexes : gap < 30 min = même burst
+    let burst = [pairAlarms[0]];
+    for (let i = 1; i < pairAlarms.length; i++) {
+      const gap = pairAlarms[i]._dt - pairAlarms[i - 1]._dt;
+      if (gap < WINDOW_MS) {
+        burst.push(pairAlarms[i]);
+      } else {
+        result.push(bestCPA(burst));
+        burst = [pairAlarms[i]];
+      }
+    }
+    result.push(bestCPA(burst));
+  }
+
+  result.sort((a, b) => a._dt - b._dt);
+  return result;
+}
+
+function bestCPA(burst) {
+  return burst.reduce((acc, cur) => {
+    const ca = parseFloat(acc.cpa_meters);
+    const cc = parseFloat(cur.cpa_meters);
+    return (isNaN(cc) ? Infinity : cc) < (isNaN(ca) ? Infinity : ca) ? cur : acc;
+  });
+}
+
+function imoOrMmsi(imo, mmsi) {
+  const s = (imo || '').replace(/\D/g, '');
+  return s.length === 7 ? s : (mmsi || '');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Construction d'une ligne pnav4
+//  cols[0..32] = colonnes A..AG (A=0, B=1, C=2 … AG=32)
+//  Le TSV exporté commence à l'index 2 (col C) — coller depuis C
+// ═══════════════════════════════════════════════════════════
+function buildRow(alarm) {
+  const dt    = alarm._dt;
+  const b64   = alarm._b64;
+  const sysE  = b64 ? b64.SYSTEM_EVENT : null;
+  const t0    = b64 ? get(b64, 'TARGET_0.TARGET_DATA') : null;
+  const t1    = b64 ? get(b64, 'TARGET_1.TARGET_DATA') : null;
+
+  // Position navire 1
+  const pos = parseWKT(alarm.ship_position);
+  const latStr  = pos ? ddToDDM(pos.lat, true)  : '';
+  const lonStr  = pos ? ddToDDM(pos.lon, false) : '';
+  const posJson = pos
+    ? JSON.stringify({ format: 'DMS', lat: +pos.lat.toFixed(6), lon: +pos.lon.toFixed(6) })
+    : '';
+
+  // Acquitteur : ack_username du CSV, fallback sur b64, sinon "non acquitté"
+  const operator = alarm.ack_username
+    || (sysE ? get(sysE, 'F.A.A.D') : '')
+    || 'non acquitté';
+
+  // TYPE selon seuil 0,7 Nq (1296,4 m)
+  const cpam    = alarm.cpa_meters   !== '' ? parseFloat(alarm.cpa_meters)   : NaN;
+  const tcpaSec = alarm.tcpa_seconds !== '' ? parseFloat(alarm.tcpa_seconds) : NaN;
+  const cpaNq   = cpam / 1852;
+  const typeE   = (!isNaN(cpam) && cpaNq < 0.7) ? 'SITUATION RAPPROCHÉE' : 'SITUATION ANTICIPÉE';
+
+  const cpaFmt  = isNaN(cpam)    ? '' : cpaNq.toFixed(2);
+  const tcpaFmt = isNaN(tcpaSec) ? '' : (tcpaSec / 60).toFixed(1);
+
+  const cols = new Array(33).fill('');
+  cols[2]  = fmtDate(dt);                         // C  DATE
+  cols[3]  = fmtTime(dt);                         // D  HEURE z
+  cols[4]  = typeE;                               // E  TYPE
+  // F(5) G(6) H(7) = vides (ne pas remplir)
+  cols[8]  = shipType(alarm.ship_name,  t0);                    // I  type navire 1
+  cols[9]  = imoOrMmsi(alarm.ship_imo,  alarm.ship_mmsi);      // J  IMO 1 (ou MMSI)
+  cols[10] = alarm.ship_name  || '';                            // K  nom 1
+  cols[11] = alarm.ack_comment || '';             // L  DESCRIPTION = commentaire opérateur
+  // M(12) N(13) = vides (ne pas remplir)
+  cols[14] = posJson;                             // O  POSITION SIG
+  cols[15] = latStr;                              // P  LATITUDE
+  cols[16] = lonStr;                              // Q  LONGITUDE
+  // R(17) S(18) T(19) U(20) V(21) = vides (ne pas remplir)
+  cols[22] = operator;                            // W  TRIG-OPÉRATEUR (acquitteur)
+  // X(23) Y(24) = vides (saisie manuelle)
+  cols[25] = shipType(alarm.ship2_name, t1);                    // Z  type navire 2
+  cols[26] = imoOrMmsi(alarm.ship2_imo, alarm.ship2_mmsi);     // AA IMO 2 (ou MMSI)
+  cols[27] = alarm.ship2_name || '';              // AB nom navire 2
+  // AC(28) = vide (ACTION DU VTS non rempli)
+  // AD(29) = vide (ISSUE DE LA SITUATION non rempli)
+  // AE(30) = vide
+  cols[31] = cpaFmt;                              // AF CPA (Nq)
+  cols[32] = tcpaFmt;                             // AG TCPA (min)
+
+  return {
+    cols,
+    // champs aperçu
+    date: cols[2], heure: cols[3], type: typeE,
+    nav1: alarm.ship_name  || '', imo1: alarm.ship_imo  || '', type1: cols[8],
+    nav2: alarm.ship2_name || '', imo2: alarm.ship2_imo || '', type2: cols[25],
+    cpa: cpaFmt, tcpa: tcpaFmt,
+    lat: latStr, lon: lonStr, oper: operator,
+    desc: cols[11],
+  };
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Génération principale
+// ═══════════════════════════════════════════════════════════
+function generate() {
+  if (loadedFiles.size === 0) { toast('Aucun fichier chargé.', true); return; }
+
+  const fromVal = document.getElementById('date-from').value;
+  const toVal   = document.getElementById('date-to').value;
+  const dtFrom  = fromVal ? new Date(fromVal + 'T00:00:00Z') : null;
+  const dtTo    = toVal   ? new Date(toVal   + 'T23:59:59Z') : null;
+
+  let allAlarms = [];
+  let brutCount = 0;
+
+  for (const f of loadedFiles.values()) {
+    for (const r of f.objects) {
+      if (r.alarm_event_type !== 'COLLISION_CONTROL') continue;
+      const dt = parseUTC(r.event_dt_utc);
+      if (!dt) continue;
+      if (dtFrom && dt < dtFrom) continue;
+      if (dtTo   && dt > dtTo)   continue;
+      r._dt  = dt;
+      r._b64 = decodeB64(r.event_data_b64);
+      brutCount++;
+      allAlarms.push(r);
+    }
+  }
+
+  const deduped = deduplicate(allAlarms);
+  generatedRows = deduped.map(buildRow);
+
+  const nRapp = generatedRows.filter(r => r.type === 'SITUATION RAPPROCHÉE').length;
+  const nAnti = generatedRows.length - nRapp;
+
+  document.getElementById('s-files').textContent = loadedFiles.size;
+  document.getElementById('s-brut').textContent  = brutCount;
+  document.getElementById('s-dedup').textContent = deduped.length;
+  document.getElementById('s-rapp').textContent  = nRapp;
+  document.getElementById('s-anti').textContent  = nAnti;
+  document.getElementById('stats-card').style.display = '';
+
+  // Aperçu
+  const tbody = document.getElementById('preview-body');
+  tbody.innerHTML = '';
+  for (const row of generatedRows) {
+    const tr  = document.createElement('tr');
+    const cls = row.type === 'SITUATION RAPPROCHÉE' ? 'badge-r' : 'badge-a';
+    tr.innerHTML =
+      `<td>${row.date}</td><td>${row.heure}</td>` +
+      `<td><span class="badge ${cls}">${esc(row.type)}</span></td>` +
+      `<td title="${esc(row.nav1)}">${esc(row.nav1)}</td><td>${esc(row.imo1)}</td><td>${row.type1}</td>` +
+      `<td title="${esc(row.nav2)}">${esc(row.nav2)}</td><td>${esc(row.imo2)}</td><td>${row.type2}</td>` +
+      `<td>${row.cpa}</td><td>${row.tcpa}</td>` +
+      `<td>${row.lat}</td><td>${row.lon}</td>` +
+      `<td title="${esc(row.desc)}">${esc(row.desc)}</td>` +
+      `<td title="${esc(row.oper)}">${esc(row.oper)}</td>`;
+    tbody.appendChild(tr);
+  }
+  document.getElementById('preview-card').style.display = deduped.length ? '' : 'none';
+
+  // TSV commence en colonne C (index 2) — l'utilisateur colle depuis la cellule C
+  currentTSV = generatedRows.map(r =>
+    r.cols.slice(2).map(v => String(v).replace(/[\t\r\n]+/g, ' ')).join('\t')
+  ).join('\n');
+
+  const hasRows = deduped.length > 0;
+  document.getElementById('btn-copy').disabled   = !hasRows;
+  document.getElementById('btn-export').disabled = !hasRows;
+
+  if (hasRows) toast(`${deduped.length} ligne(s) générée(s).`);
+  else toast('Aucune alarme COLLISION_CONTROL dans la sélection.', true);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Export / copie
+// ═══════════════════════════════════════════════════════════
+function copyTSV() {
+  if (!currentTSV) return;
+  const doToast = () => toast('TSV copié — cliquez sur la cellule C puis Ctrl+V dans Sheets.');
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(currentTSV).then(doToast).catch(() => fallbackCopy(doToast));
+  } else {
+    fallbackCopy(doToast);
+  }
+}
+
+function fallbackCopy(cb) {
+  const ta = Object.assign(document.createElement('textarea'), {
+    value: currentTSV, style: 'position:fixed;opacity:0'
+  });
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); cb(); }
+  catch { toast('Copie impossible — utilisez "Télécharger CSV".', true); }
+  document.body.removeChild(ta);
+}
+
+function exportCSV() {
+  if (!generatedRows.length) return;
+  const hdr = [
+    'DATE','HEURE z','TYPE','Module SEAMIS','Sous type','N° SEAMIS',
+    'Type navire 1','IMO/Immat 1','Nom navire 1','DESCRIPTION','Nb diffusions','Lieu',
+    'POSITION SIG','LATITUDE','LONGITUDE',
+    'DEMANDE DE MOU','PV','NEARMISS','MISE EN DEMEURE','EEI',
+    'Trig - opérateur','CMS','Principale règle enfreinte',
+    'Type navire 2','IMO navire 2','Nom navire 2',
+    'ACTION DU VTS','ISSUE DE LA SITUATION','PROCEDURE INITIEE',
+    'CPA (Nq)','TCPA (min)'
+  ];
+  const q   = v => `"${String(v).replace(/"/g, '""')}"`;
+  const csv = [hdr.map(q).join(','), ...generatedRows.map(r => r.cols.slice(2).map(q).join(','))].join('\n');
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
+  const a    = Object.assign(document.createElement('a'), {
+    href: URL.createObjectURL(blob),
+    download: `pnav4_${new Date().toISOString().slice(0,10)}.csv`
+  });
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('Fichier CSV téléchargé.');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Gestion des fichiers
+// ═══════════════════════════════════════════════════════════
+function loadFile(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const rows    = parseCSV(e.target.result);
+    const objects = csvToObjects(rows);
+    loadedFiles.set(file.name, { name: file.name, objects });
+    renderFileList();
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+function removeFile(btn) {
+  const name = btn.dataset.file;
+  loadedFiles.delete(name);
+  renderFileList();
+}
+
+function renderFileList() {
+  const el = document.getElementById('file-list');
+  if (!loadedFiles.size) { el.innerHTML = ''; return; }
+  el.innerHTML = [...loadedFiles.keys()].map(name =>
+    `<span class="chip">📄 ${esc(name)}<span class="chip-remove" data-file="${esc(name)}" onclick="removeFile(this)">×</span></span>`
+  ).join('');
+}
+
+function clearDates() {
+  document.getElementById('date-from').value = '';
+  document.getElementById('date-to').value   = '';
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Utilitaires
+// ═══════════════════════════════════════════════════════════
+function esc(s) {
+  return String(s || '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+let _toastTimer;
+function toast(msg, isErr = false) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show' + (isErr ? ' err' : '');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => { el.className = 'toast'; }, 4000);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Drag & drop
+// ═══════════════════════════════════════════════════════════
+const dz = document.getElementById('drop-zone');
+dz.addEventListener('dragover',  e => { e.preventDefault(); dz.classList.add('drag-over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+dz.addEventListener('drop', e => {
+  e.preventDefault();
+  dz.classList.remove('drag-over');
+  [...e.dataTransfer.files].filter(f => f.name.toLowerCase().endsWith('.csv')).forEach(loadFile);
+});
+
+document.getElementById('file-input').addEventListener('change', e => {
+  [...e.target.files].forEach(loadFile);
+  e.target.value = '';
+});
+</script>
+</body>
+</html>

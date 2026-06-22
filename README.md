@@ -97,6 +97,16 @@ src/
     alarmes/      # Alarmes de collision VTS
     sitprox/      # Suivi situations de rapprochement (pnav4)
     egc/          # EGC — Adressage
+
+docs/
+  sitprox/
+    vts2pnav4.html   # Outil standalone autonome (référence / secours)
+    specs.md         # Spécifications fonctionnelles initiales
+
+data/                # Données opérationnelles locales — gitignorées, non publiées
+  sitprox/
+    CROSS_JB_VTS_EVENTS_YYYY-MM_*.csv   # Exports mensuels SIG VTS
+    pnav4.csv                            # Export de référence du tableau pnav4
 ```
 
 ---
