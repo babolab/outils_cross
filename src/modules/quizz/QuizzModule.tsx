@@ -1,9 +1,11 @@
 import { useState } from 'react'
 
+const base = import.meta.env.BASE_URL.replace(/\/$/, '')
+
 const quizzes = [
-  { id: 'nouvel-arrivant', label: 'Géo — Débutant', src: '/quizz/nouvel-arrivant.html' },
-  { id: 'confirme',        label: 'Géo — Confirmé', src: '/quizz/confirme.html' },
-  { id: 'snsm',           label: 'Quiz SNSM',      src: '/quizz/snsm.html' },
+  { id: 'nouvel-arrivant', label: 'Géo — Débutant', src: `${base}/quizz/nouvel-arrivant.html` },
+  { id: 'confirme',        label: 'Géo — Confirmé', src: `${base}/quizz/confirme.html` },
+  { id: 'snsm',           label: 'Quiz SNSM',      src: `${base}/quizz/snsm.html` },
 ]
 
 export default function QuizzModule() {
