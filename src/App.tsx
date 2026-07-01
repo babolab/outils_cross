@@ -1,12 +1,13 @@
 import { useHashLocation } from 'wouter/use-hash-location'
 import { Router, Route, Link } from 'wouter'
-import { Map, FileArchive, Bell, Radio } from 'lucide-react'
+import { Map, FileArchive, Bell, Radio, GraduationCap } from 'lucide-react'
 import { cn } from './lib/utils'
 import CarteModule from './modules/carte/CarteModule'
 import ExtractionModule from './modules/extraction/ExtractionModule'
 import AlarmesModule from './modules/alarmes/AlarmesModule'
 import EgcModule from './modules/egc/EgcModule'
 import SitproxModule from './modules/sitprox/SitproxModule'
+import QuizzModule from './modules/quizz/QuizzModule'
 import logoUrl from '/logo-cross.png'
 
 const navItems = [
@@ -15,6 +16,7 @@ const navItems = [
   { path: '/alarmes', label: 'Alarmes collision', icon: Bell },
   { path: '/sitprox', label: 'Suivi sitprox', icon: Bell },
   { path: '/egc', label: 'EGC — Adressage', icon: Radio },
+  { path: '/quizz', label: 'Quizz opérateurs', icon: GraduationCap },
 ]
 
 function Sidebar() {
@@ -63,6 +65,7 @@ export default function App() {
           <Route path="/alarmes" component={AlarmesModule} />
           <Route path="/egc" component={EgcModule} />
           <Route path="/sitprox" component={SitproxModule} />
+          <Route path="/quizz" component={QuizzModule} />
         </main>
       </div>
     </Router>

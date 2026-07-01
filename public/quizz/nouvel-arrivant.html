@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Maritime - CROSS Jobourg</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f4f8;
+        }
+        #container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        #header {
+            background: #003d82;
+            color: white;
+            padding: 15px 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        h1 {
+            font-size: 1.5em;
+            margin-bottom: 5px;
+        }
+        #stats {
+            display: flex;
+            gap: 30px;
+            font-size: 0.95em;
+        }
+        #map {
+            flex: 1;
+            position: relative;
+        }
+        #sidebar {
+            background: white;
+            padding: 20px;
+            min-height: 150px;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+        }
+        .question {
+            font-size: 1.2em;
+            color: #003d82;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .result.excellent { background: #d4edda; color: #155724; }
+        .result.bon { background: #cce5ff; color: #004085; }
+        .result.moyen { background: #fff3cd; color: #856404; }
+        .result.faible { background: #f8d7da; color: #721c24; }
+        #finalScore {
+            text-align: center;
+            font-size: 2em;
+            color: #003d82;
+            padding: 30px;
+        }
+        button {
+            background: #003d82;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-top: 15px;
+        }
+        button:hover {
+            background: #005bb5;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="header">
+            <h1>Quiz Maritime - Zone CROSS Jobourg</h1>
+            <div id="stats">
+                <div>Question: <span id="current">1</span>/20</div>
+                <div>Score: <span id="score">0</span>/20</div>
+            </div>
+        </div>
+        <div id="map"></div>
+        <div id="sidebar">
+            <div class="question">Cliquez sur la carte pour localiser : <span id="stationName"></span></div>
+            <div id="feedback"></div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Base de données des points maritimes de la zone CROSS Jobourg
+        const allPoints = [
+            // Stations SNSM principales
+            { name: "Station SNSM Goury", lat: 49.7156, lon: -1.9478 },
+            { name: "Station SNSM Barfleur", lat: 49.6697, lon: -1.2614 },
+            { name: "Station SNSM Granville", lat: 48.8361, lon: -1.5931 },
+            { name: "Station SNSM Carteret", lat: 49.3750, lon: -1.7833 },
+            { name: "Station SNSM Diélette", lat: 49.5525, lon: -1.8614 },
+            { name: "Station SNSM Port-Bail", lat: 49.3300, lon: -1.6997 },
+            { name: "Station SNSM Agon-Coutainville", lat: 49.0386, lon: -1.5883 },
+            { name: "Station SNSM Saint-Malo", lat: 48.6500, lon: -2.0256 },
+            { name: "Station SNSM Le Havre", lat: 49.4878, lon: 0.1075 },
+            { name: "Station SNSM Ouistreham", lat: 49.2764, lon: -0.2483 },
+            { name: "Station SNSM Courseulles-sur-Mer", lat: 49.3333, lon: -0.4583 },
+            { name: "Station SNSM Port-en-Bessin", lat: 49.3483, lon: -0.7550 },
+            { name: "Station SNSM Grandcamp-Maisy", lat: 49.3906, lon: -1.0450 },
+            { name: "Station SNSM Cherbourg", lat: 49.6392, lon: -1.6222 },
+            { name: "Station SNSM Fermanville", lat: 49.6833, lon: -1.4500 },
+            { name: "Station SNSM Saint-Vaast-la-Hougue", lat: 49.5833, lon: -1.2667 },
+            { name: "Station SNSM Honfleur", lat: 49.4186, lon: 0.2336 },
+            
+            // Stations SNSM secondaires
+            { name: "Station SNSM Blainville-sur-Mer", lat: 49.0683, lon: -1.5733 },
+            { name: "Station SNSM Saint-Martin-de-Bréhal", lat: 48.9008, lon: -1.5183 },
+            { name: "Station SNSM Gouville-sur-Mer", lat: 49.0964, lon: -1.5906 },
+            { name: "Station SNSM Hauteville-sur-Mer", lat: 48.9700, lon: -1.5550 },
+            { name: "Station SNSM Jullouville", lat: 48.7833, lon: -1.5667 },
+            { name: "Station SNSM Pirou", lat: 49.1667, lon: -1.5833 },
+            { name: "Station SNSM Saint-Germain-sur-Ay", lat: 49.2183, lon: -1.6350 },
+            { name: "Station SNSM Genêts", lat: 48.6667, lon: -1.4667 },
+            { name: "Station SNSM Urville-Nacqueville", lat: 49.6833, lon: -1.7333 },
+            { name: "Station SNSM Champeaux", lat: 48.7167, lon: -1.5167 },
+            
+            // Havres
+            { name: "Havre de Carteret", lat: 49.3750, lon: -1.7900 },
+            { name: "Havre de Portbail", lat: 49.3333, lon: -1.7000 },
+            { name: "Havre de Surville", lat: 49.2667, lon: -1.6667 },
+            { name: "Havre de Lessay", lat: 49.2167, lon: -1.6333 },
+            { name: "Havre de Geffosses", lat: 49.1833, lon: -1.6167 },
+            { name: "Havre de Blainville", lat: 49.0683, lon: -1.5800 },
+            { name: "Havre de Régneville", lat: 49.0167, lon: -1.5667 },
+            { name: "Havre de la Vanlée", lat: 48.9500, lon: -1.5500 },
+            
+            // Plages remarquables
+            { name: "Plage de Collignon", lat: 49.6500, lon: -1.6500 },
+            { name: "Plage de Querqueville", lat: 49.6667, lon: -1.7000 },
+            { name: "Plage d'Urville-Nacqueville", lat: 49.6833, lon: -1.7333 },
+            { name: "Plage de Sciotot", lat: 49.5167, lon: -1.8333 },
+            { name: "Plage de Siouville", lat: 49.5500, lon: -1.8500 },
+            { name: "Plage de Vauville", lat: 49.6167, lon: -1.8667 },
+            { name: "Plage de la Potinière", lat: 49.3667, lon: -1.7667 },
+            { name: "Plage du Butin", lat: 49.4500, lon: 0.1667 },
+            { name: "Plage de Saint-Adresse", lat: 49.5050, lon: 0.0783 },
+            { name: "Plage de Riva Bella", lat: 49.2833, lon: -0.2500 },
+            { name: "Sword Beach", lat: 49.2917, lon: -0.3000 },
+            { name: "Juno Beach", lat: 49.3400, lon: -0.4400 },
+            { name: "Omaha Beach", lat: 49.3700, lon: -0.8500 },
+            { name: "Utah Beach", lat: 49.4167, lon: -1.1667 },
+            { name: "Merville-Franceville", lat: 49.2833, lon: -0.2000 },
+            
+            // Caps et pointes
+            { name: "Cap d'Antifer", lat: 49.6850, lon: 0.1617 },
+            { name: "Cap de la Hève", lat: 49.5167, lon: 0.0667 },
+            { name: "Pointe de Cabourg", lat: 49.2900, lon: -0.1167 },
+            { name: "Pointe du Hoc", lat: 49.3983, lon: -0.9892 },
+            { name: "Pointe de Saire", lat: 49.6667, lon: -1.2333 },
+            { name: "Pointe de Gatteville", lat: 49.6983, lon: -1.2617 },
+            { name: "Cap Lévi", lat: 49.6917, lon: -1.4583 },
+            { name: "Nez de Jobourg", lat: 49.6833, lon: -1.9167 },
+            { name: "Cap de la Hague", lat: 49.7250, lon: -1.9417 },
+            { name: "Cap de Carteret", lat: 49.3833, lon: -1.8000 },
+            { name: "Cap de Flamanville", lat: 49.5333, lon: -1.8667 },
+            { name: "Pointe d'Agon", lat: 49.0333, lon: -1.6000 },
+            { name: "Pointe du Roc (Granville)", lat: 48.8350, lon: -1.6000 },
+            { name: "Pointe de Champeaux", lat: 48.7333, lon: -1.5333 },
+            { name: "Pointe du Grouin", lat: 48.7083, lon: -1.8417 },
+            
+            // Phares et sémaphores
+            { name: "Phare de Gatteville", lat: 49.6983, lon: -1.2617 },
+            { name: "Phare de la Hague", lat: 49.7250, lon: -1.9417 },
+            { name: "Phare du Cap Lévi", lat: 49.6917, lon: -1.4583 },
+            { name: "Sémaphore de la Hève", lat: 49.5167, lon: 0.0667 },
+            
+            // Ports majeurs
+            { name: "Port du Havre", lat: 49.4878, lon: 0.1075 },
+            { name: "Port 2000", lat: 49.5167, lon: 0.1333 },
+            { name: "Port d'Antifer", lat: 49.6667, lon: 0.1500 },
+            { name: "Port de Cherbourg", lat: 49.6392, lon: -1.6222 },
+            { name: "Port Chantereyne", lat: 49.6400, lon: -1.6183 },
+            { name: "Port de Granville", lat: 48.8350, lon: -1.5967 },
+            { name: "Port du Hérel", lat: 48.8333, lon: -1.6000 },
+            { name: "Port de Diélette", lat: 49.5525, lon: -1.8614 },
+            { name: "Port de Carteret", lat: 49.3750, lon: -1.7833 },
+            { name: "Port de Saint-Vaast", lat: 49.5833, lon: -1.2667 },
+            { name: "Port de Barfleur", lat: 49.6697, lon: -1.2614 },
+            { name: "Port-en-Bessin", lat: 49.3483, lon: -0.7550 },
+            { name: "Port d'Ouistreham", lat: 49.2764, lon: -0.2483 },
+            { name: "Port d'Honfleur", lat: 49.4186, lon: 0.2336 },
+            { name: "Port de Saint-Malo", lat: 48.6500, lon: -2.0256 },
+            
+            // Installations portuaires Cherbourg
+            { name: "Digue de Collignon", lat: 49.6500, lon: -1.6333 },
+            { name: "Digue de l'Est", lat: 49.6667, lon: -1.5833 },
+            { name: "Digue de Querqueville", lat: 49.6667, lon: -1.6667 },
+            { name: "Fort Central", lat: 49.6833, lon: -1.6167 },
+            { name: "Fort de l'Ouest", lat: 49.6833, lon: -1.6500 },
+            { name: "Île Pelée", lat: 49.6833, lon: -1.5833 },
+            { name: "Grande Rade", lat: 49.6500, lon: -1.6000 },
+            { name: "Petite Rade", lat: 49.6400, lon: -1.6200 },
+            
+            // Villes et villages côtiers
+            { name: "Le Havre", lat: 49.4938, lon: 0.1077 },
+            { name: "Honfleur", lat: 49.4186, lon: 0.2336 },
+            { name: "Trouville", lat: 49.3667, lon: 0.0833 },
+            { name: "Deauville", lat: 49.3583, lon: 0.0750 },
+            { name: "Cabourg", lat: 49.2917, lon: -0.1167 },
+            { name: "Ouistreham", lat: 49.2764, lon: -0.2483 },
+            { name: "Courseulles-sur-Mer", lat: 49.3333, lon: -0.4583 },
+            { name: "Arromanches", lat: 49.3400, lon: -0.6200 },
+            { name: "Grandcamp-Maisy", lat: 49.3906, lon: -1.0450 },
+            { name: "Cherbourg", lat: 49.6392, lon: -1.6222 },
+            { name: "Barfleur", lat: 49.6697, lon: -1.2614 },
+            { name: "Goury", lat: 49.7156, lon: -1.9478 },
+            { name: "Omonville", lat: 49.7000, lon: -1.8667 },
+            { name: "Granville", lat: 48.8361, lon: -1.5931 },
+            { name: "Cancale", lat: 48.6753, lon: -1.8511 },
+            { name: "Saint-Malo", lat: 48.6500, lon: -2.0256 },
+            
+            // Îles et archipels
+            { name: "Île de Tatihou", lat: 49.5833, lon: -1.2500 },
+            { name: "Îles Saint-Marcouf", lat: 49.5000, lon: -1.1500 },
+            { name: "Mont-Saint-Michel", lat: 48.6361, lon: -1.5114 },
+            { name: "Tombelaine", lat: 48.6667, lon: -1.5167 },
+            { name: "Chausey", lat: 48.8667, lon: -1.8167 },
+            { name: "Jersey", lat: 49.2144, lon: -2.1312 },
+            { name: "Guernesey", lat: 49.4657, lon: -2.5853 },
+            { name: "Aurigny (Alderney)", lat: 49.7167, lon: -2.2000 },
+            { name: "Sark", lat: 49.4333, lon: -2.3667 },
+            
+            // Rivières et estuaires
+            { name: "L'Orne", lat: 49.2833, lon: -0.2500 },
+            { name: "La Touques", lat: 49.3667, lon: 0.0833 },
+            { name: "La Dives", lat: 49.2833, lon: -0.0833 },
+            { name: "La Sée", lat: 48.6667, lon: -1.3833 },
+            { name: "Le Couesnon", lat: 48.6167, lon: -1.5000 },
+            
+            // Zones et chenaux
+            { name: "Chenal du Havre", lat: 49.4833, lon: 0.0000 },
+            { name: "Raz Blanchard", lat: 49.7333, lon: -2.0000 },
+            { name: "Baie des Veys", lat: 49.4000, lon: -1.1333 },
+            { name: "Anse du Brick", lat: 49.6667, lon: -1.5667 },
+            { name: "Baie d'Ecalgrain", lat: 49.7000, lon: -1.9333 },
+            { name: "Port-Racine", lat: 49.7083, lon: -1.9167 },
+            { name: "Landemer", lat: 49.6917, lon: -1.8500 },
+            
+            // Ouvrages D-Day
+            { name: "Port Artificiel Arromanches", lat: 49.3400, lon: -0.6200 },
+            { name: "Batterie de Longues-sur-Mer", lat: 49.3450, lon: -0.6900 },
+            
+            // Installations diverses
+            { name: "CNPE Flamanville", lat: 49.5333, lon: -1.8667 },
+            { name: "Pont de Normandie", lat: 49.4333, lon: 0.2833 },
+            { name: "Pont de Tancarville", lat: 49.4833, lon: 0.4667 },
+            { name: "Base OTAN Cherbourg", lat: 49.6392, lon: -1.6222 },
+            
+            // Villages littoraux complémentaires
+            { name: "Le Rozel", lat: 49.4833, lon: -1.8333 },
+            { name: "Barneville", lat: 49.3667, lon: -1.7667 },
+            { name: "Donville-les-Bains", lat: 48.8500, lon: -1.5833 },
+            { name: "Saint-Pair-sur-Mer", lat: 48.8167, lon: -1.5667 },
+            { name: "Carolles", lat: 48.7500, lon: -1.5500 },
+            { name: "Saint-Jean-le-Thomas", lat: 48.7167, lon: -1.5000 },
+            { name: "Houlgate", lat: 49.3000, lon: -0.0667 },
+            { name: "Dives-sur-Mer", lat: 49.2833, lon: -0.0833 },
+            { name: "Lion-sur-Mer", lat: 49.3000, lon: -0.3167 },
+            { name: "Luc-sur-Mer", lat: 49.3167, lon: -0.3583 },
+            { name: "Asnelles", lat: 49.3333, lon: -0.5833 },
+            { name: "Colleville-sur-Mer", lat: 49.3500, lon: -0.8333 }
+        ];
+
+        // Sélectionner 20 points aléatoires
+        const selectedPoints = [...allPoints]
+            .sort(() => Math.random() - 0.5)
+            .slice(0, 20);
+
+        // Initialisation
+        let currentQuestion = 0;
+        let totalScore = 0;
+        let currentPoint = null;
+        let userMarker = null;
+        let correctMarker = null;
+        let polyline = null;
+
+        // Vue initiale de la carte
+        const initialView = { center: [49.3, -1.0], zoom: 9 };
+
+        // Carte centrée sur la Manche SANS CONTRÔLES DE ZOOM
+        const map = L.map('map', {
+            zoomControl: false,
+            scrollWheelZoom: false,
+            doubleClickZoom: false,
+            touchZoom: false,
+            boxZoom: false,
+            keyboard: false,
+            dragging: true
+        }).setView(initialView.center, initialView.zoom);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        function resetMapView() {
+            map.setView(initialView.center, initialView.zoom);
+        }
+
+        function startQuestion() {
+            if (currentQuestion >= 20) {
+                showFinalScore();
+                return;
+            }
+
+            currentPoint = selectedPoints[currentQuestion];
+            document.getElementById('stationName').textContent = currentPoint.name;
+            document.getElementById('current').textContent = currentQuestion + 1;
+            document.getElementById('feedback').innerHTML = '';
+
+            // Nettoyer la carte
+            if (userMarker) map.removeLayer(userMarker);
+            if (correctMarker) map.removeLayer(correctMarker);
+            if (polyline) map.removeLayer(polyline);
+
+            // Retour au zoom initial
+            resetMapView();
+
+            // Attendre le clic
+            map.once('click', handleGuess);
+        }
+
+        function handleGuess(e) {
+            const userLat = e.latlng.lat;
+            const userLon = e.latlng.lng;
+
+            // Placer le marqueur utilisateur
+            userMarker = L.circleMarker([userLat, userLon], {
+                radius: 8,
+                fillColor: '#dc3545',
+                color: 'white',
+                weight: 2,
+                fillOpacity: 1
+            }).addTo(map);
+
+            // Placer le marqueur correct
+            correctMarker = L.circleMarker([currentPoint.lat, currentPoint.lon], {
+                radius: 8,
+                fillColor: '#28a745',
+                color: 'white',
+                weight: 2,
+                fillOpacity: 1
+            }).addTo(map);
+
+            // Ligne entre les deux
+            polyline = L.polyline([
+                [userLat, userLon],
+                [currentPoint.lat, currentPoint.lon]
+            ], {
+                color: '#666',
+                weight: 2,
+                dashArray: '5, 10'
+            }).addTo(map);
+
+            // Calculer la distance en km
+            const distance = map.distance(
+                [userLat, userLon],
+                [currentPoint.lat, currentPoint.lon]
+            ) / 1000;
+
+            // Calculer le score (système dégressif)
+            let points = 0;
+            let feedback = '';
+            let className = '';
+
+            if (distance < 2) {
+                points = 1;
+                feedback = `Excellent ! Distance: ${distance.toFixed(1)} km`;
+                className = 'excellent';
+            } else if (distance < 5) {
+                points = 0.8;
+                feedback = `Très bon ! Distance: ${distance.toFixed(1)} km`;
+                className = 'excellent';
+            } else if (distance < 10) {
+                points = 0.6;
+                feedback = `Bon ! Distance: ${distance.toFixed(1)} km`;
+                className = 'bon';
+            } else if (distance < 20) {
+                points = 0.4;
+                feedback = `Moyen. Distance: ${distance.toFixed(1)} km`;
+                className = 'moyen';
+            } else if (distance < 40) {
+                points = 0.2;
+                feedback = `Loin. Distance: ${distance.toFixed(1)} km`;
+                className = 'faible';
+            } else {
+                points = 0;
+                feedback = `Trop loin ! Distance: ${distance.toFixed(1)} km`;
+                className = 'faible';
+            }
+
+            totalScore += points;
+            document.getElementById('score').textContent = totalScore.toFixed(1);
+
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `result ${className}`;
+            resultDiv.innerHTML = `${feedback} - Points: ${points.toFixed(1)}/1`;
+            document.getElementById('feedback').appendChild(resultDiv);
+
+            const nextBtn = document.createElement('button');
+            nextBtn.textContent = currentQuestion < 19 ? 'Question suivante' : 'Voir le résultat final';
+            nextBtn.onclick = () => {
+                currentQuestion++;
+                startQuestion();
+            };
+            document.getElementById('feedback').appendChild(nextBtn);
+        }
+
+        function showFinalScore() {
+            const note = totalScore.toFixed(1);
+            let appreciation = '';
+            if (note >= 18) appreciation = '🏆 Capitaine au long cours !';
+            else if (note >= 15) appreciation = '⚓ Excellent navigateur !';
+            else if (note >= 12) appreciation = '🧭 Bon marin !';
+            else if (note >= 9) appreciation = '⛵ Mousse confirmé !';
+            else appreciation = '🌊 À réviser la navigation...';
+
+            document.getElementById('sidebar').innerHTML = `
+                <div id="finalScore">
+                    <h2>Quiz terminé !</h2>
+                    <p>Votre score final : ${note}/20</p>
+                    <p>${appreciation}</p>
+                    <button onclick="location.reload()">Nouveau quiz</button>
+                </div>
+            `;
+
+            // Afficher tous les points du quiz sur la carte
+            selectedPoints.forEach(point => {
+                L.circleMarker([point.lat, point.lon], {
+                    radius: 6,
+                    fillColor: '#003d82',
+                    color: 'white',
+                    weight: 2,
+                    fillOpacity: 0.8
+                }).bindPopup(point.name).addTo(map);
+            });
+
+            map.fitBounds(selectedPoints.map(p => [p.lat, p.lon]));
+        }
+
+        // Démarrer le quiz
+        startQuestion();
+    </script>
+</body>
+</html>
