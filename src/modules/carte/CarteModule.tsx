@@ -173,7 +173,7 @@ export default function CarteModule() {
       {/* Map + Panel */}
       <div className="flex-1 relative overflow-hidden">
         <MapContainer center={[49.7, -1.9]} zoom={9} className="h-full w-full z-0" zoomControl={false}>
-          <DarkOceanBasemap />
+          <DarkOceanBasemap position="topleft" />
           {hasData && <FitBounds drift={drift} vessels={vessels} />}
 
           {showDrift && driftPointsAtTime.map((p, i) => {
