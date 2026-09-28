@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
-import { MapContainer, TileLayer, Circle, Rectangle, Popup, useMap } from 'react-leaflet'
+import { MapContainer, Circle, Rectangle, Popup, useMap } from 'react-leaflet'
+import { DarkOceanBasemap } from '../../components/DarkOceanBasemap'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import type { EgcFormState } from './types'
@@ -117,12 +118,7 @@ export default function EgcMap({ form }: EgcMapProps) {
         className="w-full h-full"
         zoomControl
       >
-        <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>'
-          subdomains="abcd"
-          maxZoom={19}
-        />
+        <DarkOceanBasemap />
         <ZoneLayer form={form} />
       </MapContainer>
 

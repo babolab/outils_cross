@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
-import { MapContainer, TileLayer, CircleMarker, Polyline, Popup, useMap } from 'react-leaflet'
+import { MapContainer, CircleMarker, Polyline, Popup, useMap } from 'react-leaflet'
+import { DarkOceanBasemap } from '../../components/DarkOceanBasemap'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { Upload, Play, Pause, SkipBack, SkipForward, X, Anchor, Navigation } from 'lucide-react'
@@ -172,10 +173,7 @@ export default function CarteModule() {
       {/* Map + Panel */}
       <div className="flex-1 relative overflow-hidden">
         <MapContainer center={[49.7, -1.9]} zoom={9} className="h-full w-full z-0" zoomControl={false}>
-          <TileLayer
-            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-            attribution='&copy; <a href="https://carto.com/">CARTO</a>'
-          />
+          <DarkOceanBasemap />
           {hasData && <FitBounds drift={drift} vessels={vessels} />}
 
           {showDrift && driftPointsAtTime.map((p, i) => {

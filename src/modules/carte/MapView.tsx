@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react'
-import { MapContainer, TileLayer, CircleMarker, Polyline, Tooltip, useMap } from 'react-leaflet'
+import { MapContainer, CircleMarker, Polyline, Tooltip, useMap } from 'react-leaflet'
+import { DarkOceanBasemap } from '../../components/DarkOceanBasemap'
 import type { MothyWaypoint, VtsTrack, AnaisVessel, LayerVisibility } from './types'
 
 const TRACK_COLORS = ['#60a5fa', '#34d399', '#f472b6', '#fb923c', '#a78bfa', '#facc15']
@@ -54,10 +55,7 @@ export default function MapView({ mothyPoints, vtsTracks, anaisVessels, visibili
       style={{ height: '100%', width: '100%' }}
       className="z-0"
     >
-      <TileLayer
-        url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-        attribution='&copy; <a href="https://carto.com/">CARTO</a>'
-      />
+      <DarkOceanBasemap />
 
       {visibility.mothy && filteredMothy.map((w, i) => (
         <CircleMarker key={i} center={[w.lat, w.lon]} radius={4} pathOptions={{ color: '#06b6d4', fillOpacity: 0.7 }}>
