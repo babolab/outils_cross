@@ -140,7 +140,7 @@ data/                # Données opérationnelles locales — gitignorées, non p
 
 Chaque outil est un module de `src/modules/`, déclaré dans `src/App.tsx` (entrée `navItems` de la barre latérale et `Route`, navigation par hash : `#/tnav`, `#/quizz`…).
 
-Un outil développé et déployé à part (comme TNAV → Seamis) est intégré par un module qui l'affiche en iframe. Les deux sites étant sur `babolab.github.io`, ils partagent la même origine : l'attribut `allow="clipboard-write"` suffit pour que les boutons « copier » fonctionnent dans le cadre. L'outil intégré peut détecter qu'il est affiché en iframe (`window.self !== window.top`) pour masquer son propre en-tête.
+Un outil développé et déployé à part (comme TNAV → Seamis) est intégré par un module qui l'affiche en iframe. Les deux sites étant sur `babolab.github.io`, ils partagent la même origine : l'attribut `allow="clipboard-write"` suffit pour que les boutons « copier » fonctionnent dans le cadre. L'outil intégré ne doit pas avoir d'en-tête propre : la barre latérale en tient lieu.
 
 ---
 
