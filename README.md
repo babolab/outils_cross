@@ -69,6 +69,12 @@ Aide à la rédaction de la ligne d'adressage des messages **EGC (Enhanced Group
 
 > **Responsabilité opérateur :** l'opérateur est seul responsable de vérifier la cohérence et l'exactitude de l'adressage EGC avant tout envoi. Cet outil est une aide à la rédaction et ne se substitue pas au jugement opérationnel.
 
+### TNAV → Seamis
+
+Préparation des entrées de la base balises de **Seamis** à partir de l'export ods des déclarations de traversée (TNAV) de démarches-simplifiées : une clé HEXID ou MMSI et un texte à coller par balise, la recherche du navire dans Seamis pour y verser le PDF, et le suivi des actions à faire.
+
+L'outil est développé et déployé dans son propre dépôt, [tnav2Seamis](https://github.com/babolab/tnav2Seamis), et affiché ici dans un cadre (iframe). Son mode d'emploi : [MODE_EMPLOI.md](https://github.com/babolab/tnav2Seamis/blob/main/MODE_EMPLOI.md).
+
 ---
 
 ## Utilisation
@@ -97,6 +103,7 @@ src/
     alarmes/      # Alarmes de collision VTS
     sitprox/      # Suivi situations de rapprochement (pnav4)
     egc/          # EGC — Adressage
+    tnav/         # TNAV → Seamis (iframe vers babolab.github.io/tnav2Seamis)
 
 docs/
   sitprox/
