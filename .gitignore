@@ -1,6 +1,13 @@
 # Données opérationnelles locales (non versionnées)
 data/
 
+# Exports démarches-simplifiées (TNAV) : données personnelles, ne jamais versionner
+*.ods
+*.xlsx
+*.csv
+*.zip
+*.pdf
+
 # Logs
 logs
 *.log
