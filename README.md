@@ -6,7 +6,7 @@
 
 > **Web toolbox for Maritime Rescue Coordination Centre (MRCC) operators** — built for real-time pollution surveillance, vessel tracking and SAR coordination. Designed for CROSS Jobourg, adaptable to any MRCC/VTS environment.
 
-Boîte à outils web destinée au quart de surveillance de la navigation et au quart de surveillance de la pollution du **CROSS Jobourg**. Ces outils fonctionnent entièrement dans le navigateur, sans serveur ni installation : aucune donnée n'est transmise à l'extérieur.
+Boîte à outils web destinée au quart de surveillance de la navigation, au quart de surveillance de la pollution et au quart de sauvetage (SAR) du **CROSS Jobourg**. Ces outils fonctionnent entièrement dans le navigateur, sans serveur ni installation : aucune donnée n'est transmise à l'extérieur.
 
 D'autres CROSS ou toute personne dont le travail s'y prête sont libres de les utiliser.
 
@@ -71,9 +71,25 @@ Aide à la rédaction de la ligne d'adressage des messages **EGC (Enhanced Group
 
 ### TNAV → Seamis
 
-Préparation des entrées de la base balises de **Seamis** à partir de l'export ods des déclarations de traversée (TNAV) de démarches-simplifiées : une clé HEXID ou MMSI et un texte à coller par balise, la recherche du navire dans Seamis pour y verser le PDF, et le suivi des actions à faire.
+Report dans **Seamis** des déclarations de traversée (TNAV) déposées par les plaisanciers sur démarches-simplifiées, pour qu'une alerte de balise (406 MHz ou AIS) renvoie immédiatement vers le dossier.
 
-L'outil est développé et déployé dans son propre dépôt, [tnav2Seamis](https://github.com/babolab/tnav2Seamis), et affiché ici dans un cadre (iframe). Son mode d'emploi : [MODE_EMPLOI.md](https://github.com/babolab/tnav2Seamis/blob/main/MODE_EMPLOI.md).
+- Importer l'export **.ods** de démarches-simplifiées (le CSV ne contient ni les balises, ni l'équipage, ni les contacts à terre)
+- Seuls les dossiers dont la case « Entré dans Seamis? » n'est pas cochée sont traités
+- Une entrée **clé HEXID ou MMSI + texte** par identifiant de balise, à copier dans la base balises de Seamis (texte court encadré par le n° de dossier, à coller en tête des déclarations précédentes)
+- Pour chaque dossier, la **recherche du navire dans Seamis** (`mmsi:…, cs:…, immat:…, nom:…`) à copier, pour y verser le PDF du dossier
+- Suivi des actions à faire : entrées saisies, PDF versés, cases cochées dans démarches-simplifiées
+- Anomalies signalées sans bloquer : HEXID ou MMSI invalide, pavillon incohérent avec le MMSI, dossier sans balise ou sans contact à terre
+
+L'outil est développé et déployé dans son propre dépôt, [tnav2Seamis](https://github.com/babolab/tnav2Seamis), et affiché ici dans un cadre (iframe) : il se met à jour à chaque déploiement de ce dépôt. Mode d'emploi opérateur : [MODE_EMPLOI.md](https://github.com/babolab/tnav2Seamis/blob/main/MODE_EMPLOI.md).
+
+### Quizz opérateurs
+
+Trois quiz d'auto-formation, chacun dans un sous-onglet :
+
+- **Géo — Débutant** et **Géo — Confirmé** : connaissance géographique de la zone du CROSS Jobourg
+- **Quiz SNSM** : correspondance entre les stations SNSM et leur numéro SNS
+
+Les quiz sont des pages HTML autonomes (`public/quizz/`), affichées en iframe.
 
 ---
 
@@ -104,6 +120,10 @@ src/
     sitprox/      # Suivi situations de rapprochement (pnav4)
     egc/          # EGC — Adressage
     tnav/         # TNAV → Seamis (iframe vers babolab.github.io/tnav2Seamis)
+    quizz/        # Quizz opérateurs (sous-onglets en iframe)
+
+public/
+  quizz/          # Pages HTML autonomes des quiz
 
 docs/
   sitprox/
@@ -115,6 +135,12 @@ data/                # Données opérationnelles locales — gitignorées, non p
     CROSS_JB_VTS_EVENTS_YYYY-MM_*.csv   # Exports mensuels SIG VTS
     pnav4.csv                            # Export de référence du tableau pnav4
 ```
+
+### Ajouter un onglet
+
+Chaque outil est un module de `src/modules/`, déclaré dans `src/App.tsx` (entrée `navItems` de la barre latérale et `Route`, navigation par hash : `#/tnav`, `#/quizz`…).
+
+Un outil développé et déployé à part (comme TNAV → Seamis) est intégré par un module qui l'affiche en iframe. Les deux sites étant sur `babolab.github.io`, ils partagent la même origine : l'attribut `allow="clipboard-write"` suffit pour que les boutons « copier » fonctionnent dans le cadre. L'outil intégré peut détecter qu'il est affiché en iframe (`window.self !== window.top`) pour masquer son propre en-tête.
 
 ---
 
