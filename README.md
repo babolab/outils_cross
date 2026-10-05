@@ -80,7 +80,7 @@ Report dans **Seamis** des déclarations de traversée (TNAV) déposées par les
 - Suivi des actions à faire : entrées saisies, PDF versés, cases cochées dans démarches-simplifiées
 - Anomalies signalées sans bloquer : HEXID ou MMSI invalide, pavillon incohérent avec le MMSI, dossier sans balise ou sans contact à terre
 
-L'outil est développé et déployé dans son propre dépôt, [tnav2Seamis](https://github.com/babolab/tnav2Seamis), et affiché ici dans un cadre (iframe) : il se met à jour à chaque déploiement de ce dépôt. Mode d'emploi opérateur : [MODE_EMPLOI.md](https://github.com/babolab/tnav2Seamis/blob/main/MODE_EMPLOI.md).
+Tout le traitement a lieu dans le navigateur : le fichier n'est envoyé nulle part. Les exports réels contiennent des données personnelles et ne doivent jamais être versionnés (`.gitignore` exclut `*.ods`, `*.xlsx`, `*.csv`, `*.zip`, `*.pdf`). Mode d'emploi opérateur : [docs/tnav/MODE_EMPLOI.md](docs/tnav/MODE_EMPLOI.md).
 
 ### Quizz opérateurs
 
@@ -119,7 +119,7 @@ src/
     alarmes/      # Alarmes de collision VTS
     sitprox/      # Suivi situations de rapprochement (pnav4)
     egc/          # EGC — Adressage
-    tnav/         # TNAV → Seamis (iframe vers babolab.github.io/tnav2Seamis)
+    tnav/         # TNAV → Seamis (core/ : traitement en TypeScript pur, sans React, testé avec vitest)
     quizz/        # Quizz opérateurs (sous-onglets en iframe)
 
 public/
@@ -129,18 +129,31 @@ docs/
   sitprox/
     vts2pnav4.html   # Outil standalone autonome (référence / secours)
     specs.md         # Spécifications fonctionnelles initiales
+  tnav/
+    MODE_EMPLOI.md               # Mode d'emploi opérateur
+    specification générale.md    # Spécifications fonctionnelles initiales
 
 data/                # Données opérationnelles locales — gitignorées, non publiées
   sitprox/
     CROSS_JB_VTS_EVENTS_YYYY-MM_*.csv   # Exports mensuels SIG VTS
     pnav4.csv                            # Export de référence du tableau pnav4
+  tnav/
+    dossiers_declaration-traversee_*.ods # Exports démarches-simplifiées (test sur export réel)
 ```
 
 ### Ajouter un onglet
 
 Chaque outil est un module de `src/modules/`, déclaré dans `src/App.tsx` (entrée `navItems` de la barre latérale et `Route`, navigation par hash : `#/tnav`, `#/quizz`…).
 
-Un outil développé et déployé à part (comme TNAV → Seamis) est intégré par un module qui l'affiche en iframe. Les deux sites étant sur `babolab.github.io`, ils partagent la même origine : l'attribut `allow="clipboard-write"` suffit pour que les boutons « copier » fonctionnent dans le cadre. L'outil intégré ne doit pas avoir d'en-tête propre : la barre latérale en tient lieu.
+Un outil développé et déployé à part peut être intégré par un module qui l'affiche en iframe. S'il est publié sur `babolab.github.io`, il partage l'origine de ce site : l'attribut `allow="clipboard-write"` suffit pour que les boutons « copier » fonctionnent dans le cadre. L'outil intégré ne doit pas avoir d'en-tête propre : la barre latérale en tient lieu.
+
+### Tests
+
+```bash
+npm test          # vitest (module TNAV)
+```
+
+Le workflow de déploiement lance les tests avant le build : un test en échec bloque la publication.
 
 ---
 
