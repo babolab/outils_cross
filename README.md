@@ -73,14 +73,14 @@ Aide à la rédaction de la ligne d'adressage des messages **EGC (Enhanced Group
 
 Report dans **Seamis** des déclarations de traversée (TNAV) déposées par les plaisanciers sur démarches-simplifiées, pour qu'une alerte de balise (406 MHz ou AIS) renvoie immédiatement vers le dossier.
 
-- Importer l'export **.ods** de démarches-simplifiées (le CSV ne contient ni les balises, ni l'équipage, ni les contacts à terre)
+- Importer l'export **.ods** de démarches-simplifiées (le CSV ne contient ni les balises, ni l'équipage, ni les contacts à terre) et le **.zip** des pièces jointes, par glisser-déposer n'importe où dans la page
 - Seuls les dossiers dont la case « Entré dans Seamis? » n'est pas cochée sont traités
-- Une entrée **clé HEXID ou MMSI + texte** par identifiant de balise, à copier dans la base balises de Seamis (texte court encadré par le n° de dossier, à coller en tête des déclarations précédentes)
-- Pour chaque dossier, la **recherche du navire dans Seamis** (`mmsi:…, cs:…, immat:…, nom:…`) à copier, pour y verser le PDF du dossier
-- Suivi des actions à faire : entrées saisies, PDF versés, cases cochées dans démarches-simplifiées
+- Une entrée **clé HEXID ou MMSI + texte** par identifiant de balise, à copier dans le référentiel balises de Seamis (une information par ligne, libellés en majuscules, trois parties : navire, personnes et trajet, autres balises ; encadré par le n° de dossier, à coller en tête des déclarations précédentes)
+- Pour chaque dossier, la **recherche du navire dans Seamis** (`mmsi:…, cs:…, immat:…, nom:…`) à copier, avec un lien vers le référentiel navires, et le **PDF et les pièces jointes du dossier** (lus dans le zip, rattachés par n° de dossier) à télécharger pour les verser au navire
+- Suivi des actions à faire (rouge tant qu'il en reste, vert une fois terminées) : entrées saisies, pièces jointes versées, cases cochées dans démarches-simplifiées
 - Anomalies signalées sans bloquer : HEXID ou MMSI invalide, pavillon incohérent avec le MMSI, dossier sans balise ou sans contact à terre
 
-Tout le traitement a lieu dans le navigateur : le fichier n'est envoyé nulle part. Les exports réels contiennent des données personnelles et ne doivent jamais être versionnés (`.gitignore` exclut `*.ods`, `*.xlsx`, `*.csv`, `*.zip`, `*.pdf`). Mode d'emploi opérateur : [docs/tnav/MODE_EMPLOI.md](docs/tnav/MODE_EMPLOI.md).
+Tout le traitement a lieu dans le navigateur : les fichiers ne sont envoyés nulle part. Les exports réels contiennent des données personnelles et ne doivent jamais être versionnés (`.gitignore` exclut `*.ods`, `*.xlsx`, `*.csv`, `*.zip`, `*.pdf`). Mode d'emploi opérateur : [docs/tnav/MODE_EMPLOI.md](docs/tnav/MODE_EMPLOI.md).
 
 ### Quizz opérateurs
 

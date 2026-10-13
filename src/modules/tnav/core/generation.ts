@@ -4,13 +4,13 @@ import { controlerBalise, controlerDossier } from './controles'
 import { formaterDateHeureUtc, formaterDateJour, formaterNombre, tronquer } from './normalisation'
 import type { Anomalie, Balise, Dossier, EntreeBalise, ResultatTraitement, TypeCle } from './types'
 
-/** Nombre maximal de lignes entre les délimiteurs d'un bloc. */
-export const MAX_LIGNES = 10
+/** Nombre maximal de lignes entre les délimiteurs d'un bloc (une information par ligne). */
+export const MAX_LIGNES = 25
 /** Longueur maximale d'un texte libre (trajet, description) dans une ligne. */
 export const MAX_TEXTE_LIBRE = 100
 
 export const MENTION_PDF =
-  'Détails complets : consulter le PDF de la démarche déposée (fiche navire Seamis) ou le demander au CROSS Jobourg.'
+  'DÉTAILS COMPLETS : consulter le PDF de la démarche déposée (fiche navire Seamis) ou le demander au CROSS Jobourg.'
 
 /** Statuts à bord désignant le responsable du navire. */
 const STATUT_CHEF = /chef|skipper|capitaine|patron|responsable/i
@@ -18,8 +18,8 @@ const STATUT_CHEF = /chef|skipper|capitaine|patron|responsable/i
 const joindre = (morceaux: (string | false | undefined | null)[], separateur = ' - ') =>
   morceaux.filter(Boolean).join(separateur)
 
-/** Ligne « libellé : contenu », ou null si le contenu est vide. */
-const ligne = (libelle: string, contenu: string) => (contenu ? `${libelle} : ${contenu}` : null)
+/** Ligne « LIBELLÉ : contenu » (libellé en majuscules pour une lecture rapide), ou null si le contenu est vide. */
+const ligne = (libelle: string, contenu: string) => (contenu ? `${libelle.toUpperCase()} : ${contenu}` : null)
 
 export function decrireBalise(b: Balise): string {
   return joindre([b.type || 'Balise', b.hexId && `HEXID ${b.hexId}`, b.mmsi && `MMSI ${b.mmsi}`], ' ')
@@ -42,61 +42,72 @@ function personneABord(d: Dossier): string {
   return joindre([qui, gsm, equipage])
 }
 
+/** Sections du bloc, séparées par une ligne vide : 1 navire, 2 personnes et trajet, 3 balises et PDF. */
+type Section = 1 | 2 | 3
+
 /**
  * Lignes du bloc, classées par priorité décroissante (les dernières sont supprimées en premier si le
- * bloc dépasse MAX_LIGNES), chacune avec sa position d'affichage.
+ * bloc dépasse MAX_LIGNES), chacune avec sa position d'affichage et sa section.
+ * Les lignes vides entre sections ne comptent pas dans MAX_LIGNES.
  */
-function lignesBloc(d: Dossier, balise: Balise): { ordre: number; texte: string }[] {
+function lignesBloc(d: Dossier, balise: Balise): { ordre: number; section: Section; texte: string }[] {
   const n = d.navire
   const autres = d.balises.filter(b => b !== balise)
   const c = d.contactsTerre[0]
   const p = d.programme
   const com = d.communications
-  const candidates: [number, string | null][] = [
-    [1, ligne('Navire', joindre([
-      n.nom,
-      joindre([n.marque, n.modele], ' '),
-      n.longueur && `${formaterNombre(n.longueur)} m`,
-      n.description && `coque ${tronquer(n.description, 60)}`,
-      n.immatriculation && `immat. ${n.immatriculation}`,
-      n.pavillon && `pavillon ${n.pavillon}`,
-      n.portAttache && `port ${n.portAttache}`,
-    ]))],
-    [3, ligne('À bord', personneABord(d))],
-    [7, c ? ligne('Contact à terre', joindre([
+  // One piece of information per line; the key beacon itself is not repeated (it is the Seamis key).
+  const candidates: [number, Section, string | null][] = [
+    [1, 1, ligne('Navire', n.nom)],
+    [8, 1, ligne('MMSI navire', n.mmsi)],
+    [5, 1, ligne('Immatriculation', n.immatriculation)],
+    [9, 1, ligne('Indicatif', n.indicatif)],
+    [10, 2, ligne('À bord', personneABord(d))],
+    [40, 3, MENTION_PDF],
+    [14, 2, c ? ligne('Contact à terre', joindre([
       joindre([c.nom, c.lien && `(${c.lien})`], ' '),
       c.telephone,
       c.email,
       d.contactsTerre.length > 1 && `(+${d.contactsTerre.length - 1} autre(s), voir PDF)`,
     ])) : null],
-    [8, ligne('Cette balise', decrireBalise(balise))],
-    [9, autres.length ? ligne('Autres balises', autres.map(decrireBalise).join(' ; ')) : null],
-    [10, MENTION_PDF],
-    [5, (p.portDepart || p.dateDepart || p.portArrivee || p.dateArrivee) ? joindre([
+    [12, 2, (p.portDepart || p.dateDepart || p.portArrivee || p.dateArrivee) ? joindre([
       ligne('Départ', joindre([p.portDepart, p.dateDepart && `le ${formaterDateJour(p.dateDepart)}`], ' ')),
       ligne('Arrivée', joindre([p.portArrivee, p.dateArrivee && `le ${formaterDateJour(p.dateArrivee)}`], ' ')),
     ]) : null],
-    [6, ligne('Trajet', p.trajet && tronquer(p.trajet, MAX_TEXTE_LIBRE))],
-    [2, joindre([n.mmsi && `MMSI navire ${n.mmsi}`, n.indicatif && `indicatif ${n.indicatif}`]) || null],
-    [4, ligne('Autres moyens', joindre([
+    [13, 2, ligne('Trajet', p.trajet && tronquer(p.trajet, MAX_TEXTE_LIBRE))],
+    ...autres.map((b, i): [number, Section, string | null] => [20 + i, 3, ligne('Autre balise', decrireBalise(b))]),
+    [2, 1, ligne('Modèle', joindre([n.marque, n.modele], ' '))],
+    [3, 1, ligne('Longueur', n.longueur && `${formaterNombre(n.longueur)} m`)],
+    [6, 1, ligne('Pavillon', n.pavillon)],
+    [11, 2, ligne('Autres moyens', joindre([
       com.iridium && `Iridium/sat. ${com.iridium}`,
       com.internetSatellite && `Internet sat. ${com.internetSatellite}`,
       com.autres && tronquer(com.autres, 40),
       com.habitudes && `vacations : ${tronquer(com.habitudes, 50)}`,
     ]))],
+    [7, 1, ligne("Port d'attache", n.portAttache)],
+    [4, 1, ligne('Coque', n.description && tronquer(n.description, MAX_TEXTE_LIBRE))],
   ]
   return candidates
-    .filter((l): l is [number, string] => !!l[1])
+    .filter((l): l is [number, Section, string] => !!l[2])
     .slice(0, MAX_LIGNES)
     .sort((a, b) => a[0] - b[0])
-    .map(([ordre, texte]) => ({ ordre, texte }))
+    .map(([ordre, section, texte]) => ({ ordre, section, texte }))
 }
 
 /** Bloc de texte complet (délimiteurs compris) pour une balise d'un dossier. */
 export function texteBloc(d: Dossier, balise: Balise): string {
   const ouverture = `===== TNAV ${d.numero}${d.dateDepot ? ` - déposée le ${formaterDateHeureUtc(d.dateDepot)}` : ''} =====`
   const fermeture = `===== fin TNAV ${d.numero} =====`
-  return [ouverture, ...lignesBloc(d, balise).map(l => l.texte), fermeture].join('\n')
+  const corps: string[] = []
+  let sectionPrecedente: Section | null = null
+  for (const l of lignesBloc(d, balise)) {
+    // Blank line between sections, for readability in Seamis
+    if (sectionPrecedente !== null && l.section !== sectionPrecedente) corps.push('')
+    corps.push(l.texte)
+    sectionPrecedente = l.section
+  }
+  return [ouverture, ...corps, fermeture].join('\n')
 }
 
 /** Dossiers à traiter : case « Entré dans Seamis? » non cochée et dossier non archivé. */

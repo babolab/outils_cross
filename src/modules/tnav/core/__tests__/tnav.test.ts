@@ -65,14 +65,21 @@ describe('entrées balises', () => {
     const epirb = r.entrees.find(e => e.cle === '9C7A3E1B2D4F601')!
     expect(epirb.texte).toBe([
       '===== TNAV 10000002 - déposée le 03/10/2026 11:33 UTC =====',
-      'Navire : NAVIRE A - Chantier Modèle 30 - 9,12 m - immat. XX00000 - pavillon Français',
-      'MMSI navire 227000001 - indicatif FAX0000',
-      'À bord : Prénom NOM (demandeur) - GSM 0600000000 - 1 équipier(s) déclaré(s)',
-      'Départ : Cherbourg le 29/09/2026 - Arrivée : Cherbourg le 30/09/2026',
-      'Trajet : Tour de la rade',
-      'Contact à terre : Contact A (Travail) - 0200000000',
-      'Cette balise : EPIRB HEXID 9C7A3E1B2D4F601 / MMSI 227000001',
-      'Autres balises : PLB HEXID ESSAIY75D69A4DE ; MOB AIS MMSI 227000099',
+      'NAVIRE : NAVIRE A',
+      'MODÈLE : Chantier Modèle 30',
+      'LONGUEUR : 9,12 m',
+      'IMMATRICULATION : XX00000',
+      'PAVILLON : Français',
+      'MMSI NAVIRE : 227000001',
+      'INDICATIF : FAX0000',
+      '',
+      'À BORD : Prénom NOM (demandeur) - GSM 0600000000 - 1 équipier(s) déclaré(s)',
+      'DÉPART : Cherbourg le 29/09/2026 - ARRIVÉE : Cherbourg le 30/09/2026',
+      'TRAJET : Tour de la rade',
+      'CONTACT À TERRE : Contact A (Travail) - 0200000000',
+      '',
+      'AUTRE BALISE : PLB HEXID ESSAIY75D69A4DE',
+      'AUTRE BALISE : MOB AIS MMSI 227000099',
       MENTION_PDF,
       '===== fin TNAV 10000002 =====',
     ].join('\n'))
@@ -98,10 +105,10 @@ describe('entrées balises', () => {
   it('cite le chef de bord, tronque le trajet et signale les contacts supplémentaires', async () => {
     const r = await resultatTest()
     const bloc = r.entrees.find(e => e.cle === '970000001')!.texte.split(SEPARATEUR_BLOCS)[1]
-    expect(bloc).toContain('À bord : Marie SKIPPER (chef de bord) - tél 0611111111 - GSM 0600000005 (Paul MARTIN)')
-    expect(bloc).toContain('Contact à terre : Contact D1 (Frère) - 0200000051 - (+2 autre(s), voir PDF)')
-    const trajet = bloc.split('\n').find(l => l.startsWith('Trajet : '))!
-    expect(trajet.length).toBeLessThanOrEqual('Trajet : '.length + 100)
+    expect(bloc).toContain('À BORD : Marie SKIPPER (chef de bord) - tél 0611111111 - GSM 0600000005 (Paul MARTIN)')
+    expect(bloc).toContain('CONTACT À TERRE : Contact D1 (Frère) - 0200000051 - (+2 autre(s), voir PDF)')
+    const trajet = bloc.split('\n').find(l => l.startsWith('TRAJET : '))!
+    expect(trajet.length).toBeLessThanOrEqual('TRAJET : '.length + 100)
     expect(trajet.endsWith('…')).toBe(true)
   })
 
@@ -109,7 +116,8 @@ describe('entrées balises', () => {
     const r = await resultatTest()
     for (const e of r.entrees) {
       for (const bloc of e.texte.split(SEPARATEUR_BLOCS)) {
-        expect(bloc.split('\n').length).toBeLessThanOrEqual(MAX_LIGNES + 2)
+        // Delimiters and blank section separators are not counted
+        expect(bloc.split('\n').filter(l => l !== '').length).toBeLessThanOrEqual(MAX_LIGNES + 2)
       }
     }
   })
